@@ -133,12 +133,6 @@ src/
 - Indicadores clave de rendimiento
 - Accesos rápidos a funcionalidades
 
-### Autenticación
-- Login seguro con JWT
-- Protección de rutas privadas
-- Gestión de sesión
-- Cierre de sesión
-
 ## Configuración de ESLint
 
 El proyecto incluye configuración de ESLint para mantener la calidad del código. Para aplicaciones en producción, se recomienda habilitar reglas type-aware:
@@ -187,12 +181,7 @@ El proyecto utiliza Material-UI con un tema personalizado que incluye:
 - Verifica que la versión de Node.js sea compatible
 - Limpia la caché de Vite: `npm run dev -- --force`
 
-### Problemas de autenticación
-- Verifica que el token JWT sea válido
-- Confirma que el backend esté configurado correctamente
-- Revisa las cookies y el localStorage del navegador
-
-### Componentes no se actualizan
+### Problemas de renderizado
 - Verifica que estés usando el estado correctamente
 - Asegúrate de que los efectos tengan las dependencias correctas
 - Revisa la consola para warnings de React

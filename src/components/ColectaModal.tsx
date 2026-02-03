@@ -1,9 +1,8 @@
 // components/ColectaModal.tsx
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Select from "react-select";
 import { api } from "../api/api";
 import type { Colecta } from "../Modelo/Colecta";
-import { useCanastillos } from "../hooks/useCanastillos";
 import { useTermos } from "../hooks/useTermos";
 import { useToros } from "../hooks/useToros";
 import { useClientes } from "../hooks/useClientes";
@@ -13,37 +12,29 @@ interface ColectaModalProps {
   isOpen: boolean;
   onClose: () => void;
   onCreated?: (colecta: Colecta) => void;
+  colectaToEdit?: Colecta;
+  onUpdated?: (colecta: Colecta) => void;
 }
 
-export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) => {
+export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpdated }: ColectaModalProps) => {
   const { termos } = useTermos();
-  const { canastillos } = useCanastillos();
   const { toros } = useToros();
   const { clientes } = useClientes();
 
   const [form, setForm] = useState({
     termoId: "",
     canastilloId: "",
+    canastilloCodigo: "",
     toroId: "",
     clienteId: "",
     cantidad: "",
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: new Date().toLocaleDateString('sv-SE'),
     vigor: "",
     motilidad: "",
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  // Filtrar canastillos únicos por código
-  const uniqueCanastillos = useMemo(() => {
-    const seen = new Set();
-    return canastillos.filter(c => {
-      if (seen.has(c.codigo)) return false;
-      seen.add(c.codigo);
-      return true;
-    });
-  }, [canastillos]);
 
   // Opciones para react-select
   const toroOptions = useMemo(() =>
@@ -54,6 +45,39 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
     clientes.map(c => ({ value: c.id, label: c.razonSocial })),
     [clientes]);
 
+  // Cargar datos de la colecta cuando se abre en modo edición
+  useEffect(() => {
+    if (colectaToEdit) {
+      // Separar vigor y motilidad del campo vigorMot
+      const [vigor, motilidad] = colectaToEdit.vigorMot?.split('/') || ['', ''];
+
+      setForm({
+        termoId: colectaToEdit.termo?.id || "",
+        canastilloId: colectaToEdit.canastillo?.id || "",
+        canastilloCodigo: colectaToEdit.canastillo?.codigo || "",
+        toroId: colectaToEdit.toro?.id || "",
+        clienteId: colectaToEdit.cliente?.id || "",
+        cantidad: colectaToEdit.cantidad?.toString() || "",
+        fecha: colectaToEdit.fecha ? new Date(colectaToEdit.fecha).toISOString().split('T')[0] : new Date().toLocaleDateString('sv-SE'),
+        vigor: vigor || "",
+        motilidad: motilidad || "",
+      });
+    } else {
+      // Resetear formulario cuando no hay colecta para editar
+      setForm({
+        termoId: "",
+        canastilloId: "",
+        canastilloCodigo: "",
+        toroId: "",
+        clienteId: "",
+        cantidad: "",
+        fecha: new Date().toLocaleDateString('sv-SE'),
+        vigor: "",
+        motilidad: "",
+      });
+    }
+  }, [colectaToEdit]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -63,30 +87,43 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
       // Combinar vigor y motilidad en formato: vigor/motilidad
       const vigorMot = `${form.vigor}/${form.motilidad}`;
 
-      const response = await api.post("/colectas", {
+      const payload = {
         termoId: form.termoId,
-        canastilloId: form.canastilloId,
+        canastilloId: form.canastilloId || undefined,
+        canastilloCodigo: form.canastilloCodigo,
         toroId: form.toroId,
         clienteId: form.clienteId,
         cantidad: parseInt(form.cantidad),
         fecha: form.fecha,
         vigorMot: vigorMot,
-      });
+      };
 
-      onCreated?.(response.data);
+      let response;
+      if (colectaToEdit) {
+        // Modo edición
+        response = await api.put(`/colectas/${colectaToEdit.id}`, payload);
+        onUpdated?.(response.data);
+      } else {
+        // Modo creación
+        response = await api.post("/colectas", payload);
+        onCreated?.(response.data);
+      }
+
       setForm({
         termoId: "",
         canastilloId: "",
+        canastilloCodigo: "",
         toroId: "",
         clienteId: "",
         cantidad: "",
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: new Date().toLocaleDateString('sv-SE'),
         vigor: "",
         motilidad: "",
       });
       onClose();
     } catch (err: any) {
-      setError("Error al crear la colecta: " + (err.response?.data?.message || err.message || ""));
+      const action = colectaToEdit ? "actualizar" : "crear";
+      setError(`Error al ${action} la colecta: ` + (err.response?.data?.message || err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -108,7 +145,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-xl font-bold text-gray-800">Registrar Colecta</h2>
+          <h2 className="text-xl font-bold text-gray-800">{colectaToEdit ? 'Editar Colecta' : 'Registrar Colecta'}</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
             <span className="text-2xl">&times;</span>
           </button>
@@ -140,18 +177,17 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
 
             {/* Canastillo */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Canastillo</label>
-              <select
-                value={form.canastilloId}
-                onChange={(e) => setForm({ ...form, canastilloId: e.target.value })}
+              <label className="block text-sm font-medium text-gray-700 mb-1">Canastillo (#)</label>
+              <input
+                type="number"
+                min="1"
+                max="100"
+                value={form.canastilloCodigo}
+                onChange={(e) => setForm({ ...form, canastilloCodigo: e.target.value, canastilloId: "" })}
                 className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Ej: 1"
                 required
-              >
-                <option value="">Seleccione...</option>
-                {uniqueCanastillos.map((c) => (
-                  <option key={c.id} value={c.id}>{c.codigo}</option>
-                ))}
-              </select>
+              />
             </div>
 
             {/* Toro con Buscador */}
@@ -162,6 +198,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
               </div>
               <Select
                 options={toroOptions}
+                value={toroOptions.find(opt => opt.value === form.toroId) || null}
                 placeholder="Buscar toro..."
                 isSearchable
                 styles={selectStyles}
@@ -179,6 +216,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated }: ColectaModalProps) 
               </div>
               <Select
                 options={clienteOptions}
+                value={clienteOptions.find(opt => opt.value === form.clienteId) || null}
                 placeholder="Buscar cliente..."
                 isSearchable
                 styles={selectStyles}

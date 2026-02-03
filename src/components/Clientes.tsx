@@ -93,9 +93,12 @@ export const Clientes = () => {
           items={clientesFiltrados}
           columns={["Razón Social", "CUIT", "Acciones"]}
           renderCells={(c) => [
-            <span className="font-medium text-gray-900">{c.razonSocial}</span>,
+            <Link to={`/clientes/${c.id}`} className="font-medium text-blue-600 hover:underline">{c.razonSocial}</Link>,
             <span className="font-mono text-gray-600">{c.cuit}</span>,
             <div className="flex gap-2">
+              <Link to={`/clientes/${c.id}`}>
+                <Button size="sm" variant="secondary">Ver</Button>
+              </Link>
               <Link to={`/editar-cliente/${c.id}`}>
                 <Button size="sm" variant="secondary">Editar</Button>
               </Link>

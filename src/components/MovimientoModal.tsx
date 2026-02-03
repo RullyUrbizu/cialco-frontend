@@ -9,6 +9,7 @@ interface MovimientoModalProps {
     colectaId: string;
     stockDisponible: number;
     onSuccess: () => void;
+    tipo: 'ingreso' | 'salida';
 }
 
 export const MovimientoModal = ({
@@ -16,7 +17,8 @@ export const MovimientoModal = ({
     onClose,
     colectaId,
     stockDisponible,
-    onSuccess
+    onSuccess,
+    tipo
 }: MovimientoModalProps) => {
     const [cantidad, setCantidad] = useState("");
     const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
@@ -36,7 +38,8 @@ export const MovimientoModal = ({
             return;
         }
 
-        if (cantidadNum > stockDisponible) {
+        // Solo validar stock disponible para salidas
+        if (tipo === 'salida' && cantidadNum > stockDisponible) {
             setError(`No hay suficiente stock. Disponible: ${stockDisponible}`);
             return;
         }
@@ -58,9 +61,10 @@ export const MovimientoModal = ({
             // Crear el movimiento con los datos correctos
             await api.post("/movimientos", {
                 inventarioId,
-                tipo: "salida",
+                tipo: tipo,
                 cantidad: cantidadNum,
-                notas: observaciones
+                notas: observaciones,
+                fecha: new Date().toLocaleString('sv-SE').replace(' ', 'T') // Fecha y hora local 24hs
             });
 
             // Resetear form
@@ -89,7 +93,9 @@ export const MovimientoModal = ({
             <div className="bg-white rounded-lg shadow-xl max-w-md w-full">
                 {/* Header */}
                 <div className="flex items-center justify-between p-6 border-b border-gray-200">
-                    <h2 className="text-xl font-bold text-gray-900">Registrar Salida</h2>
+                    <h2 className="text-xl font-bold text-gray-900">
+                        {tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Salida'}
+                    </h2>
                     <button
                         onClick={onClose}
                         className="text-gray-400 hover:text-gray-600 transition"
@@ -102,7 +108,7 @@ export const MovimientoModal = ({
                 <form onSubmit={handleSubmit} className="p-6 space-y-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Cantidad a entregar
+                            {tipo === 'ingreso' ? 'Cantidad a ingresar' : 'Cantidad a entregar'}
                         </label>
                         <input
                             type="number"
@@ -110,18 +116,20 @@ export const MovimientoModal = ({
                             onChange={(e) => setCantidad(e.target.value)}
                             required
                             min="1"
-                            max={stockDisponible}
+                            max={tipo === 'salida' ? stockDisponible : undefined}
                             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                             placeholder="Ej: 10"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
-                            Stock disponible: <span className="font-semibold text-blue-600">{stockDisponible}</span>
-                        </p>
+                        {tipo === 'salida' && (
+                            <p className="text-xs text-gray-500 mt-1">
+                                Stock disponible: <span className="font-semibold text-blue-600">{stockDisponible}</span>
+                            </p>
+                        )}
                     </div>
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Fecha de entrega
+                            {tipo === 'ingreso' ? 'Fecha de ingreso' : 'Fecha de entrega'}
                         </label>
                         <input
                             type="date"
@@ -158,7 +166,7 @@ export const MovimientoModal = ({
                             Cancelar
                         </Button>
                         <Button type="submit" isLoading={loading}>
-                            Registrar Salida
+                            {tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Salida'}
                         </Button>
                     </div>
                 </form>

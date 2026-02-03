@@ -94,9 +94,12 @@ export const Toros = () => {
             items={torosFiltrados}
             columns={["Nombre", "Raza", "Acciones"]}
             renderCells={(t) => [
-              <span className="font-medium text-gray-900">{t.nombre}</span>,
+              <Link to={`/toros/${t.id}`} className="font-medium text-blue-600 hover:underline">{t.nombre}</Link>,
               <span className="text-gray-600 px-2 py-1 bg-gray-100 rounded-md text-sm">{t.raza}</span>,
               <div className="flex gap-2">
+                <Link to={`/toros/${t.id}`}>
+                  <Button size="sm" variant="secondary">Ver</Button>
+                </Link>
                 <Link to={`/editar-toro/${t.id}`}>
                   <Button size="sm" variant="secondary">Editar</Button>
                 </Link>

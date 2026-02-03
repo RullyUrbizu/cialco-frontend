@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import { api } from "../api/api";
 import type { Colecta } from "../Modelo/Colecta";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
-import { ArrowLeft, FileText, Hash, Layers, TrendingDown } from "lucide-react";
+import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, History, TrendingUp } from "lucide-react";
 import { MovimientoModal } from "./MovimientoModal";
+import { ColectaModal } from "./ColectaModal";
+import { useMovimientos } from "../hooks/useMovimientos";
 
 export const ColectaDetalle = () => {
     const { id } = useParams<{ id: string }>();
@@ -14,6 +16,11 @@ export const ColectaDetalle = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
+    const [ingresoModalOpen, setIngresoModalOpen] = useState(false);
+    const [editModalOpen, setEditModalOpen] = useState(false);
+    const { movimientos, loading: loadingMovimientos, refetch: refetchMovimientos } = useMovimientos(
+        colecta?.inventario?.id
+    );
 
     const fetchColecta = () => {
         if (id) {
@@ -46,14 +53,32 @@ export const ColectaDetalle = () => {
                     </Button>
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
                 </div>
-                <Button
-                    onClick={() => setModalOpen(true)}
-                    variant="primary"
-                    disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
-                >
-                    <TrendingDown className="mr-2 h-4 w-4" />
-                    Registrar Entrega
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                    <Button
+                        onClick={() => setEditModalOpen(true)}
+                        variant="ghost"
+                        className="text-gray-500 hover:text-blue-600"
+                    >
+                        <Edit className="mr-2 h-4 w-4" />
+                        Editar
+                    </Button>
+                    <div className="h-10 w-px bg-gray-200 mx-1 hidden sm:block"></div>
+                    <Button
+                        onClick={() => setIngresoModalOpen(true)}
+                        variant="secondary"
+                    >
+                        <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
+                        Ingreso
+                    </Button>
+                    <Button
+                        onClick={() => setModalOpen(true)}
+                        variant="primary"
+                        disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
+                    >
+                        <TrendingDown className="mr-2 h-4 w-4" />
+                        Entrega
+                    </Button>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -66,7 +91,17 @@ export const ColectaDetalle = () => {
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">Fecha</label>
-                            <p className="text-lg text-gray-900 font-medium">{colecta.fecha ? new Date(colecta.fecha).toLocaleDateString() : "-"}</p>
+                            <p className="text-lg text-gray-900 font-medium">
+                                {colecta.fecha ? (() => {
+                                    // Formatear fecha localmente sin desfase UTC
+                                    const dStr = String(colecta.fecha).split('T')[0];
+                                    if (dStr.includes('-')) {
+                                        const [y, m, d] = dStr.split('-');
+                                        return `${d}/${m}/${y}`;
+                                    }
+                                    return new Date(colecta.fecha).toLocaleDateString('es-AR');
+                                })() : "-"}
+                            </p>
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">Cantidad</label>
@@ -92,15 +127,17 @@ export const ColectaDetalle = () => {
                         Datos del Toro
                     </h2>
                     <div className="space-y-3">
-                        <div className="flex justify-between border-b border-gray-100 pb-2">
+                        <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
                             <span className="text-gray-600">Nombre</span>
-                            <span className="font-medium text-gray-900">{colecta.toro?.nombre}</span>
+                            <Link to={`/toros/${colecta.toro?.id}`} className="group flex items-center gap-1 hover:text-blue-600 transition-colors">
+                                <span className="font-medium text-gray-900 group-hover:text-blue-600">{colecta.toro?.nombre}</span>
+                                <ExternalLink size={14} className="text-gray-300 group-hover:text-blue-500" />
+                            </Link>
                         </div>
                         <div className="flex justify-between border-b border-gray-100 pb-2">
                             <span className="text-gray-600">Raza</span>
                             <span className="font-medium text-gray-900">{colecta.toro?.raza}</span>
                         </div>
-                        {/* ID del toro podría ir aquí si fuera relevante mostrarlo */}
                     </div>
                 </Card>
 
@@ -111,9 +148,12 @@ export const ColectaDetalle = () => {
                         Datos del Cliente
                     </h2>
                     <div className="space-y-3">
-                        <div className="flex justify-between border-b border-gray-100 pb-2">
+                        <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
                             <span className="text-gray-600">Razón Social</span>
-                            <span className="font-medium text-gray-900">{colecta.cliente?.razonSocial}</span>
+                            <Link to={`/clientes/${colecta.cliente?.id}`} className="group flex items-center gap-1 hover:text-green-600 transition-colors">
+                                <span className="font-medium text-gray-900 group-hover:text-green-600">{colecta.cliente?.razonSocial}</span>
+                                <ExternalLink size={14} className="text-gray-300 group-hover:text-green-500" />
+                            </Link>
                         </div>
                         <div className="flex justify-between border-b border-gray-100 pb-2">
                             <span className="text-gray-600">CUIT</span>
@@ -140,11 +180,11 @@ export const ColectaDetalle = () => {
                     </div>
                 </Card>
 
-                {/* Movimientos */}
+                {/* Movimientos Resumen */}
                 <Card className="p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Hash className="text-gray-600" size={20} />
-                        Registro de Movimientos
+                        Resumen de Pajuelas
                     </h2>
                     <div className="space-y-3">
                         <div className="flex justify-between items-center">
@@ -173,17 +213,110 @@ export const ColectaDetalle = () => {
                         </div>
                     </div>
                 </Card>
-
             </div>
 
-            {/* Modal de Movimiento */}
+            {/* Historial de Movimientos */}
+            <Card className="p-6 mt-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <History className="text-gray-600" size={20} />
+                    Historial de Movimientos
+                </h2>
+
+                {loadingMovimientos ? (
+                    <div className="text-center py-4 text-gray-500">Cargando movimientos...</div>
+                ) : movimientos.length === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                        No hay movimientos registrados para esta colecta
+                    </div>
+                ) : (
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead>
+                                <tr className="border-b border-gray-200 bg-gray-50">
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
+                                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Notas</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {movimientos.map((mov) => (
+                                    <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+                                        <td className="py-3 px-4 text-sm text-gray-600">
+                                            {(() => {
+                                                if (!mov.fecha) return "-";
+                                                // Formatear hora localmente
+                                                return new Date(mov.fecha).toLocaleString('es-AR', {
+                                                    day: '2-digit',
+                                                    month: '2-digit',
+                                                    year: 'numeric',
+                                                    hour: '2-digit',
+                                                    minute: '2-digit',
+                                                    hour12: false
+                                                });
+                                            })()}
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mov.tipo === 'ingreso'
+                                                ? 'bg-green-100 text-green-800'
+                                                : 'bg-red-100 text-red-800'
+                                                }`}>
+                                                {mov.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Salida'}
+                                            </span>
+                                        </td>
+                                        <td className={`py-3 px-4 text-sm font-semibold text-right ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                                            }`}>
+                                            {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
+                                        </td>
+                                        <td className="py-3 px-4 text-sm text-gray-500 max-w-xs truncate" title={mov.notas || ''}>
+                                            {mov.notas || '-'}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </Card>
+
+            {/* Modales */}
             {colecta && (
                 <MovimientoModal
                     isOpen={modalOpen}
                     onClose={() => setModalOpen(false)}
                     colectaId={colecta.id}
                     stockDisponible={colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
-                    onSuccess={fetchColecta}
+                    tipo="salida"
+                    onSuccess={() => {
+                        fetchColecta();
+                        refetchMovimientos();
+                    }}
+                />
+            )}
+
+            {colecta && (
+                <MovimientoModal
+                    isOpen={ingresoModalOpen}
+                    onClose={() => setIngresoModalOpen(false)}
+                    colectaId={colecta.id}
+                    stockDisponible={colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
+                    tipo="ingreso"
+                    onSuccess={() => {
+                        fetchColecta();
+                        refetchMovimientos();
+                    }}
+                />
+            )}
+
+            {colecta && (
+                <ColectaModal
+                    isOpen={editModalOpen}
+                    onClose={() => setEditModalOpen(false)}
+                    colectaToEdit={colecta}
+                    onUpdated={() => {
+                        fetchColecta();
+                        setEditModalOpen(false);
+                    }}
                 />
             )}
         </div>

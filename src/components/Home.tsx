@@ -10,7 +10,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
 export const Home = () => {
-  const { colectas, loading, error, deleteColecta } = useColectas();
+  const { colectas, loading, error, deleteColecta, updateColecta } = useColectas();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -18,6 +18,7 @@ export const Home = () => {
   const [razonSocial, setRazonSocial] = useState("");
   const [nombreToro, setNombreToro] = useState("");
   const [colectasFiltradas, setColectasFiltradas] = useState<Colecta[]>([]);
+  const [colectaToEdit, setColectaToEdit] = useState<Colecta | undefined>();
 
   // --- sincronizamos colectas originales con filtradas ---
   useEffect(() => {
@@ -174,10 +175,21 @@ export const Home = () => {
             renderCells={(c: Colecta) => [
               <span className="font-mono text-gray-600">{c.termo?.codigo ?? "-"}</span>,
               <span className="font-mono text-gray-600">{c.canastillo?.codigo ?? "-"}</span>,
-              <span className="font-medium text-gray-900">{c.toro?.nombre ?? "-"}</span>,
+              <Link to={`/toros/${c.toro?.id}`} className="font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
+                {c.toro?.nombre ?? "-"}
+              </Link>,
               <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
               <span className="font-semibold text-blue-600">{c.cantidad ?? 0}</span>,
-              <span className="text-gray-500 text-sm">{c.fecha ? new Date(c.fecha).toLocaleDateString() : "-"}</span>,
+              <span className="text-gray-500 text-sm">
+                {c.fecha ? (() => {
+                  const parts = String(c.fecha).split('T')[0].split('-');
+                  if (parts.length === 3) {
+                    const [y, m, d] = parts;
+                    return `${d}/${m}/${y}`;
+                  }
+                  return String(c.fecha);
+                })() : "-"}
+              </span>,
               <span
                 className="px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
                 style={{
@@ -191,6 +203,17 @@ export const Home = () => {
                 <Link to={`/colectas/${c.id}`}>
                   <Button size="sm" variant="secondary">Ver</Button>
                 </Link>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setColectaToEdit(c);
+                    setModalOpen(true);
+                  }}
+                >
+                  Editar
+                </Button>
                 <Button
                   size="sm"
                   variant="danger"
@@ -213,10 +236,18 @@ export const Home = () => {
 
       <ColectaModal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => {
+          setModalOpen(false);
+          setColectaToEdit(undefined);
+        }}
+        colectaToEdit={colectaToEdit}
         onCreated={(nuevaColecta) => {
           colectas.unshift(nuevaColecta);
           setColectasFiltradas([nuevaColecta, ...colectasFiltradas]);
+        }}
+        onUpdated={(colectaActualizada) => {
+          updateColecta(colectaActualizada);
+          setColectaToEdit(undefined);
         }}
       />
     </>

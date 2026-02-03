@@ -6,6 +6,8 @@ import { Clientes } from "./components/Clientes";
 import { ToroForm } from "./components/TorosForm";
 import { ClienteForm } from "./components/ClienteForm";
 import { ColectaDetalle } from "./components/ColectaDetalle";
+import { ToroDetalle } from "./components/ToroDetalle";
+import { ClienteDetalle } from "./components/ClienteDetalle";
 import { TermosView } from "./components/TermosView";
 
 export const App = () => {
@@ -15,7 +17,9 @@ export const App = () => {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/Toros" element={<Toros />} />
+          <Route path="/toros/:id" element={<ToroDetalle />} />
           <Route path="/Clientes" element={<Clientes />} />
+          <Route path="/clientes/:id" element={<ClienteDetalle />} />
           <Route path="/crear-toro" element={<ToroForm />} />
           <Route path="/editar-toro/:id" element={<ToroForm />} />
           <Route path="/crear-cliente" element={<ClienteForm />} />

@@ -35,5 +35,11 @@ export const useColectas = () => {
     }
   };
 
-  return { colectas, loading, error, refetch: fetchColectas, deleteColecta };
+  const updateColecta = (updatedColecta: Colecta) => {
+    setColectas(current =>
+      current.map(c => c.id === updatedColecta.id ? updatedColecta : c)
+    );
+  };
+
+  return { colectas, loading, error, refetch: fetchColectas, deleteColecta, updateColecta };
 };
