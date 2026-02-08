@@ -85,8 +85,8 @@ export const Home = () => {
 
     // Preparar datos para la tabla
     const tableData = colectasFiltradas.map(c => [
-      c.termo?.codigo || "-",
-      c.canastillo?.codigo || "-",
+      c.contenedores?.length ? `${c.contenedores.length} contenedor(es)` : "-",
+      c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-",
       c.toro?.nombre || "-",
       c.toro?.raza || "-",
       c.cantidad?.toString() || "0",
@@ -97,7 +97,7 @@ export const Home = () => {
     // Generar tabla
     autoTable(doc, {
       startY: razonSocial || nombreToro ? 38 : 32,
-      head: [["Termo", "Canastillo", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
+      head: [["Contenedores", "Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
       body: tableData,
       theme: 'grid',
       headStyles: { fillColor: [59, 130, 246], textColor: 255 },
@@ -162,71 +162,175 @@ export const Home = () => {
 
       <Card className="overflow-hidden p-0">
         {colectasFiltradas.length > 0 ? (
-          <Lista
-            items={colectasFiltradas}
-            columns={["Termo", "Canastillo", "Toro", "Raza", "Cant.", "Fecha", "Cliente", "Acciones"]}
-            onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
-            getRowStyle={(c: Colecta) => {
-              const nombre = c.cliente?.razonSocial || "";
-              if (!nombre) return { backgroundColor: '#f9fafb' };
-              const hue = stringToHue(nombre);
-              return { backgroundColor: `hsl(${hue}, 45%, 95%)` };
-            }}
-            renderCells={(c: Colecta) => [
-              <span className="font-mono text-gray-600">{c.termo?.codigo ?? "-"}</span>,
-              <span className="font-mono text-gray-600">{c.canastillo?.codigo ?? "-"}</span>,
-              <Link to={`/toros/${c.toro?.id}`} className="font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
-                {c.toro?.nombre ?? "-"}
-              </Link>,
-              <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
-              <span className="font-semibold text-blue-600">{c.cantidad ?? 0}</span>,
-              <span className="text-gray-500 text-sm">
-                {c.fecha ? (() => {
-                  const parts = String(c.fecha).split('T')[0].split('-');
-                  if (parts.length === 3) {
-                    const [y, m, d] = parts;
-                    return `${d}/${m}/${y}`;
-                  }
-                  return String(c.fecha);
-                })() : "-"}
-              </span>,
-              <span
-                className="px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
-                style={{
-                  backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 90%)` : '#f3f4f6',
-                  color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 30%)` : '#1f2937'
+          <>
+            {/* Vista de tabla para desktop */}
+            <div className="hidden md:block">
+              <Lista
+                items={colectasFiltradas}
+                columns={["Contenedores", "Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente", "Acciones"]}
+                onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
+                getRowStyle={(c: Colecta) => {
+                  const nombre = c.cliente?.razonSocial || "";
+                  if (!nombre) return { backgroundColor: '#f9fafb' };
+                  const hue = stringToHue(nombre);
+                  return { backgroundColor: `hsl(${hue}, 45%, 95%)` };
                 }}
-              >
-                {c.cliente?.razonSocial ?? "-"}
-              </span>,
-              <div className="flex gap-2">
-                <Link to={`/colectas/${c.id}`}>
-                  <Button size="sm" variant="secondary">Ver</Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setColectaToEdit(c);
-                    setModalOpen(true);
+                renderCells={(c: Colecta) => [
+                  <span className="font-semibold text-gray-700">{c.contenedores?.length || 0} cont.</span>,
+                  <span className="font-mono text-gray-600 text-xs">
+                    {c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-"}
+                  </span>,
+                  <Link to={`/toros/${c.toro?.id}`} className="font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
+                    {c.toro?.nombre ?? "-"}
+                  </Link>,
+                  <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
+                  <span className="font-semibold text-blue-600">{c.cantidad ?? 0}</span>,
+                  <span className="text-gray-500 text-sm">
+                    {c.fecha ? (() => {
+                      const parts = String(c.fecha).split('T')[0].split('-');
+                      if (parts.length === 3) {
+                        const [y, m, d] = parts;
+                        return `${d}/${m}/${y}`;
+                      }
+                      return String(c.fecha);
+                    })() : "-"}
+                  </span>,
+                  <span
+                    className="px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
+                    style={{
+                      backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 90%)` : '#f3f4f6',
+                      color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 30%)` : '#1f2937'
+                    }}
+                  >
+                    {c.cliente?.razonSocial ?? "-"}
+                  </span>,
+                  <div className="flex gap-2">
+                    <Link to={`/colectas/${c.id}`}>
+                      <Button size="sm" variant="info">Ver</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="warning"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setColectaToEdit(c);
+                        setModalOpen(true);
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(c.id);
+                      }}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                ]}
+              />
+            </div>
+
+            {/* Vista de tarjetas para móvil */}
+            <div className="md:hidden p-4 space-y-4">
+              {colectasFiltradas.map((c: Colecta) => (
+                <div
+                  key={c.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                  style={{
+                    backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 45%, 95%)` : '#f9fafb'
                   }}
+                  onClick={() => navigate(`/colectas/${c.id}`)}
                 >
-                  Editar
-                </Button>
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(c.id);
-                  }}
-                >
-                  Eliminar
-                </Button>
-              </div>
-            ]}
-          />
+                  {/* Header con Toro y Fecha */}
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <Link
+                        to={`/toros/${c.toro?.id}`}
+                        className="font-bold text-lg text-blue-600 hover:underline"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {c.toro?.nombre ?? "-"}
+                      </Link>
+                      <div className="text-sm text-gray-600">{c.toro?.raza ?? "-"}</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs text-gray-500">
+                        {c.fecha ? (() => {
+                          const parts = String(c.fecha).split('T')[0].split('-');
+                          if (parts.length === 3) {
+                            const [y, m, d] = parts;
+                            return `${d}/${m}/${y}`;
+                          }
+                          return String(c.fecha);
+                        })() : "-"}
+                      </div>
+                      <div className="font-bold text-blue-600 text-lg">{c.cantidad ?? 0}</div>
+                    </div>
+                  </div>
+
+                  {/* Info de contenedores y cliente */}
+                  <div className="space-y-2 mb-3 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Contenedores:</span>
+                      <span className="font-semibold">{c.contenedores?.length || 0}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Termos:</span>
+                      <span className="font-mono text-xs">
+                        {c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-500">Cliente:</span>
+                      <span
+                        className="px-2 py-0.5 rounded text-xs font-semibold"
+                        style={{
+                          backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 85%)` : '#e5e7eb',
+                          color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 30%)` : '#1f2937'
+                        }}
+                      >
+                        {c.cliente?.razonSocial ?? "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 pt-3 border-t border-gray-200">
+                    <Link to={`/colectas/${c.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
+                      <Button size="sm" variant="info" className="w-full">Ver</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="warning"
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setColectaToEdit(c);
+                        setModalOpen(true);
+                      }}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="flex-1"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(c.id);
+                      }}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="p-12 text-center text-gray-500">
             No se encontraron colectas con los filtros aplicados.

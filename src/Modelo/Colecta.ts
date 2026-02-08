@@ -4,10 +4,19 @@ import type { RazaEnum } from "./RazaEnum";
 import type { Termo } from "./Termo";
 import type { Toro } from "./Toro";
 
+export interface ColectaContenedor {
+  id: string;
+  colectaId: string;
+  termoId: string;
+  canastilloId: string;
+  cantidad: number;
+  stockActual: number;
+  termo?: Termo;
+  canastillo?: Canastillo;
+}
+
 export interface Colecta {
   id: string;
-  termo: Termo;
-  canastillo: Canastillo;
   toro: Toro;
   raza: RazaEnum;
   cliente: Cliente;
@@ -18,6 +27,7 @@ export interface Colecta {
   ingreso: number;
   sale: number;
   stock: number;
+  contenedores?: ColectaContenedor[];
   inventario?: {
     id: string;
     colectaId: string;

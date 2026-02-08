@@ -44,41 +44,49 @@ export const ColectaDetalle = () => {
     if (!colecta) return <div className="p-8 text-center text-gray-500">No se encontró la colecta.</div>;
 
     return (
-        <div className="max-w-4xl mx-auto">
-            <div className="mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-4">
-                    <Button variant="ghost" onClick={() => navigate("/")}>
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        Volver al Stock
-                    </Button>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                    <Button
-                        onClick={() => setEditModalOpen(true)}
-                        variant="ghost"
-                        className="text-gray-500 hover:text-blue-600"
-                    >
-                        <Edit className="mr-2 h-4 w-4" />
-                        Editar
-                    </Button>
-                    <div className="h-10 w-px bg-gray-200 mx-1 hidden sm:block"></div>
-                    <Button
-                        onClick={() => setIngresoModalOpen(true)}
-                        variant="secondary"
-                    >
-                        <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
-                        Ingreso
-                    </Button>
-                    <Button
-                        onClick={() => setModalOpen(true)}
-                        variant="primary"
-                        disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
-                    >
-                        <TrendingDown className="mr-2 h-4 w-4" />
-                        Entrega
-                    </Button>
-                </div>
+        <div className="max-w-4xl mx-auto p-4 md:p-0">
+            {/* Botón volver */}
+            <div className="mb-4">
+                <Button variant="ghost" onClick={() => navigate("/")}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    <span className="hidden sm:inline">Volver al Stock</span>
+                    <span className="sm:hidden">Volver</span>
+                </Button>
+            </div>
+
+            {/* Header: Título y botón editar */}
+            <div className="mb-3 flex items-center justify-between gap-3">
+                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
+
+                <Button
+                    onClick={() => setEditModalOpen(true)}
+                    variant="ghost"
+                    className="text-gray-500 hover:text-blue-600 flex-shrink-0"
+                >
+                    <Edit className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Editar</span>
+                </Button>
+            </div>
+
+            {/* Botones de movimientos */}
+            <div className="mb-6 flex gap-2">
+                <Button
+                    onClick={() => setIngresoModalOpen(true)}
+                    variant="secondary"
+                    className="flex-1"
+                >
+                    <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
+                    Ingreso
+                </Button>
+                <Button
+                    onClick={() => setModalOpen(true)}
+                    variant="primary"
+                    className="flex-1"
+                    disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
+                >
+                    <TrendingDown className="mr-2 h-4 w-4" />
+                    Entrega
+                </Button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -162,22 +170,50 @@ export const ColectaDetalle = () => {
                     </div>
                 </Card>
 
-                {/* Ubicación (Termo/Canastillo) */}
+                {/* Ubicación (Contenedores) */}
                 <Card className="p-6">
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Layers className="text-purple-600" size={20} />
-                        Ubicación
+                        Contenedores ({colecta.contenedores?.length || 0})
                     </h2>
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="bg-gray-50 p-3 rounded-lg text-center">
-                            <label className="text-xs text-gray-500 uppercase block mb-1">Termo</label>
-                            <span className="text-xl font-bold text-gray-800">{colecta.termo?.codigo || "-"}</span>
+                    {colecta.contenedores && colecta.contenedores.length > 0 ? (
+                        <div className="space-y-3">
+                            {colecta.contenedores.map((contenedor, index) => (
+                                <div key={contenedor.id || index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase block mb-1">Termo</label>
+                                            <span className="font-mono font-semibold text-gray-800">
+                                                {contenedor.termo?.codigo || "-"}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase block mb-1">Canastillo</label>
+                                            <span className="font-mono font-semibold text-gray-800">
+                                                {contenedor.canastillo?.codigo || "-"}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase block mb-1">Stock Actual</label>
+                                            <span className={`font-bold ${(contenedor.stockActual ?? 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                                {contenedor.stockActual ?? 0}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <label className="text-xs text-gray-500 uppercase block mb-1">Inicial</label>
+                                            <span className="font-semibold text-gray-600">
+                                                {contenedor.cantidad || 0}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                        <div className="bg-gray-50 p-3 rounded-lg text-center">
-                            <label className="text-xs text-gray-500 uppercase block mb-1">Canastillo</label>
-                            <span className="text-xl font-bold text-gray-800">{colecta.canastillo?.codigo || "-"}</span>
+                    ) : (
+                        <div className="text-center py-4 text-gray-500 text-sm">
+                            No hay contenedores registrados
                         </div>
-                    </div>
+                    )}
                 </Card>
 
                 {/* Movimientos Resumen */}

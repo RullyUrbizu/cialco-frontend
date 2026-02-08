@@ -17,14 +17,19 @@ export const TermosView = () => {
     useEffect(() => {
         if (!colectas) return;
 
-        // Agrupar colectas por termo y calcular ocupación
+        // Agrupar contenedores por termo y calcular ocupación
         const termoMap = new Map<string, number>();
 
         colectas.forEach((c: Colecta) => {
-            const codigo = c.termo?.codigo;
-            if (codigo) {
-                const stock = c.stock ?? 0;
-                termoMap.set(codigo, (termoMap.get(codigo) || 0) + stock);
+            // Ahora iteramos sobre los contenedores de cada colecta
+            if (c.contenedores && c.contenedores.length > 0) {
+                c.contenedores.forEach(contenedor => {
+                    const codigo = contenedor.termo?.codigo;
+                    if (codigo) {
+                        const stockActual = contenedor.stockActual ?? 0;
+                        termoMap.set(codigo, (termoMap.get(codigo) || 0) + stockActual);
+                    }
+                });
             }
         });
 
@@ -107,7 +112,10 @@ export const TermosView = () => {
 
                         {/* Indicador visual de estado */}
                         <div className="mt-4 pt-4 border-t border-gray-100">
-                            {termo.porcentaje >= 90 && (
+                            {termo.porcentaje >= 100 && (
+                                <div className="text-xs text-red-600 font-semibold">⚠️ Lleno</div>
+                            )}
+                            {termo.porcentaje >= 90 && termo.porcentaje < 100 && (
                                 <div className="text-xs text-red-600 font-semibold">⚠️ Casi lleno</div>
                             )}
                             {termo.porcentaje >= 70 && termo.porcentaje < 90 && (

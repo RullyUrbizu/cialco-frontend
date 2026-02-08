@@ -90,29 +90,76 @@ export const Toros = () => {
 
       <Card className="overflow-hidden p-0">
         {torosFiltrados.length > 0 ? (
-          <Lista
-            items={torosFiltrados}
-            columns={["Nombre", "Raza", "Acciones"]}
-            renderCells={(t) => [
-              <Link to={`/toros/${t.id}`} className="font-medium text-blue-600 hover:underline">{t.nombre}</Link>,
-              <span className="text-gray-600 px-2 py-1 bg-gray-100 rounded-md text-sm">{t.raza}</span>,
-              <div className="flex gap-2">
-                <Link to={`/toros/${t.id}`}>
-                  <Button size="sm" variant="secondary">Ver</Button>
-                </Link>
-                <Link to={`/editar-toro/${t.id}`}>
-                  <Button size="sm" variant="secondary">Editar</Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="danger"
-                  onClick={() => handleDelete(t)}
+          <>
+            {/* Vista de tabla para desktop */}
+            <div className="hidden md:block">
+              <Lista
+                items={torosFiltrados}
+                columns={["Nombre", "Raza", "Acciones"]}
+                renderCells={(t) => [
+                  <Link to={`/toros/${t.id}`} className="font-medium text-blue-600 hover:underline">{t.nombre}</Link>,
+                  <span className="text-gray-600 px-2 py-1 bg-gray-100 rounded-md text-sm">{t.raza}</span>,
+                  <div className="flex gap-2">
+                    <Link to={`/toros/${t.id}`}>
+                      <Button size="sm" variant="info">Ver</Button>
+                    </Link>
+                    <Link to={`/editar-toro/${t.id}`}>
+                      <Button size="sm" variant="warning">Editar</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDelete(t)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                ]}
+              />
+            </div>
+
+            {/* Vista de tarjetas para móvil */}
+            <div className="md:hidden p-4 space-y-3">
+              {torosFiltrados.map((t: Toro) => (
+                <div
+                  key={t.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
                 >
-                  Eliminar
-                </Button>
-              </div>
-            ]}
-          />
+                  <div className="flex justify-between items-start mb-3">
+                    <div className="flex-1">
+                      <Link
+                        to={`/toros/${t.id}`}
+                        className="font-bold text-lg text-blue-600 hover:underline block"
+                      >
+                        {t.nombre}
+                      </Link>
+                      <span className="inline-block mt-1 px-2 py-1 bg-gray-100 rounded-md text-sm text-gray-600">
+                        {t.raza}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 pt-3 border-t border-gray-200">
+                    <Link to={`/toros/${t.id}`} className="flex-1">
+                      <Button size="sm" variant="info" className="w-full">Ver</Button>
+                    </Link>
+                    <Link to={`/editar-toro/${t.id}`} className="flex-1">
+                      <Button size="sm" variant="warning" className="w-full">Editar</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="flex-1"
+                      onClick={() => handleDelete(t)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         ) : (
           <div className="p-12 text-center text-gray-500">
             No se encontraron toros que coincidan con los filtros.

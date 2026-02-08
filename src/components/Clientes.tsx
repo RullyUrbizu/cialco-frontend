@@ -89,29 +89,78 @@ export const Clientes = () => {
       </Card>
 
       <Card className="overflow-hidden p-0">
-        <Lista
-          items={clientesFiltrados}
-          columns={["Razón Social", "CUIT", "Acciones"]}
-          renderCells={(c) => [
-            <Link to={`/clientes/${c.id}`} className="font-medium text-blue-600 hover:underline">{c.razonSocial}</Link>,
-            <span className="font-mono text-gray-600">{c.cuit}</span>,
-            <div className="flex gap-2">
-              <Link to={`/clientes/${c.id}`}>
-                <Button size="sm" variant="secondary">Ver</Button>
-              </Link>
-              <Link to={`/editar-cliente/${c.id}`}>
-                <Button size="sm" variant="secondary">Editar</Button>
-              </Link>
-              <Button
-                size="sm"
-                variant="danger"
-                onClick={() => handleDelete(c)}
-              >
-                Eliminar
-              </Button>
+        {clientesFiltrados.length > 0 ? (
+          <>
+            {/* Vista de tabla para desktop */}
+            <div className="hidden md:block">
+              <Lista
+                items={clientesFiltrados}
+                columns={["Razón Social", "CUIT", "Acciones"]}
+                renderCells={(c) => [
+                  <Link to={`/clientes/${c.id}`} className="font-medium text-blue-600 hover:underline">{c.razonSocial}</Link>,
+                  <span className="font-mono text-gray-600">{c.cuit}</span>,
+                  <div className="flex gap-2">
+                    <Link to={`/clientes/${c.id}`}>
+                      <Button size="sm" variant="info">Ver</Button>
+                    </Link>
+                    <Link to={`/editar-cliente/${c.id}`}>
+                      <Button size="sm" variant="warning">Editar</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      onClick={() => handleDelete(c)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                ]}
+              />
             </div>
-          ]}
-        />
+
+            {/* Vista de tarjetas para móvil */}
+            <div className="md:hidden p-4 space-y-3">
+              {clientesFiltrados.map((c: Cliente) => (
+                <div
+                  key={c.id}
+                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
+                >
+                  <div className="mb-3">
+                    <Link
+                      to={`/clientes/${c.id}`}
+                      className="font-bold text-lg text-blue-600 hover:underline block mb-1"
+                    >
+                      {c.razonSocial}
+                    </Link>
+                    <span className="font-mono text-sm text-gray-600">{c.cuit}</span>
+                  </div>
+
+                  {/* Botones de acción */}
+                  <div className="flex gap-2 pt-3 border-t border-gray-200">
+                    <Link to={`/clientes/${c.id}`} className="flex-1">
+                      <Button size="sm" variant="info" className="w-full">Ver</Button>
+                    </Link>
+                    <Link to={`/editar-cliente/${c.id}`} className="flex-1">
+                      <Button size="sm" variant="warning" className="w-full">Editar</Button>
+                    </Link>
+                    <Button
+                      size="sm"
+                      variant="danger"
+                      className="flex-1"
+                      onClick={() => handleDelete(c)}
+                    >
+                      Eliminar
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        ) : (
+          <div className="p-12 text-center text-gray-500">
+            No se encontraron clientes que coincidan con los filtros.
+          </div>
+        )}
       </Card>
     </>
   );
