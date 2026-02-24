@@ -8,6 +8,8 @@ import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, Hi
 import { MovimientoModal } from "./MovimientoModal";
 import { ColectaModal } from "./ColectaModal";
 import { useMovimientos } from "../hooks/useMovimientos";
+import { Skeleton, CardSkeleton } from "./ui/Skeleton";
+import { toast } from "sonner";
 
 export const ColectaDetalle = () => {
     const { id } = useParams<{ id: string }>();
@@ -29,7 +31,9 @@ export const ColectaDetalle = () => {
                 .then((res) => setColecta(res.data))
                 .catch((err) => {
                     console.error(err);
-                    setError("Error al cargar la colecta.");
+                    const msg = "Error al cargar la colecta.";
+                    setError(msg);
+                    toast.error(msg);
                 })
                 .finally(() => setLoading(false));
         }
@@ -39,8 +43,43 @@ export const ColectaDetalle = () => {
         fetchColecta();
     }, [id]);
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Cargando detalles...</div>;
-    if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+    if (loading) {
+        return (
+            <div className="max-w-4xl mx-auto p-4 md:p-0 space-y-6">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="flex justify-between items-center">
+                    <Skeleton className="h-10 w-64" />
+                    <Skeleton className="h-10 w-24" />
+                </div>
+                <div className="flex gap-2">
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 flex-1" />
+                </div>
+                <Card className="p-6">
+                    <Skeleton className="h-6 w-32 mb-6" />
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                        {[1, 2, 3, 4].map(i => <Skeleton key={i} className="h-12 w-full" />)}
+                    </div>
+                </Card>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+            </div>
+        );
+    }
+
+    if (error) return (
+        <div className="max-w-4xl mx-auto p-8 text-center space-y-4">
+            <div className="text-red-600 font-medium">{error}</div>
+            <Button variant="secondary" onClick={fetchColecta}>Reintentar</Button>
+        </div>
+    );
+
     if (!colecta) return <div className="p-8 text-center text-gray-500">No se encontró la colecta.</div>;
 
     return (

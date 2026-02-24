@@ -1,15 +1,16 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { api } from "../api/api";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { ArrowLeft, User, History, Database, CreditCard, ExternalLink } from "lucide-react";
+import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
+import { toast } from "sonner";
+import type { Cliente } from "../Modelo/Cliente";
+import type { Colecta } from "../Modelo/Colecta";
 
-interface ClienteDetalleData {
-    id: string;
-    razonSocial: string;
-    cuit: string;
-    colectas: any[];
+interface ClienteDetalleData extends Cliente {
+    colectas: Colecta[];
 }
 
 export const ClienteDetalle = () => {
@@ -19,30 +20,57 @@ export const ClienteDetalle = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const fetchCliente = () => {
+    const fetchCliente = useCallback(() => {
         if (id) {
             setLoading(true);
-            api.get(`/clientes/${id}`)
+            api.get<ClienteDetalleData>(`/clientes/${id}`)
                 .then((res) => setCliente(res.data))
                 .catch((err) => {
                     console.error(err);
-                    setError("Error al cargar los detalles del cliente.");
+                    const msg = "Error al cargar los detalles del cliente.";
+                    setError(msg);
+                    toast.error(msg);
                 })
                 .finally(() => setLoading(false));
         }
-    };
+    }, [id]);
 
     useEffect(() => {
         fetchCliente();
     }, [id]);
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Cargando detalles del cliente...</div>;
-    if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+    if (loading) {
+        return (
+            <div className="max-w-5xl mx-auto p-4 md:p-0 space-y-6">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-64" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+                <Card className="p-6">
+                    <Skeleton className="h-6 w-32 mb-6" />
+                    <TableSkeleton rows={5} />
+                </Card>
+            </div>
+        );
+    }
+
+    if (error) return (
+        <div className="max-w-5xl mx-auto p-8 text-center space-y-4">
+            <div className="text-red-600 font-medium">{error}</div>
+            <Button variant="secondary" onClick={fetchCliente}>Reintentar</Button>
+        </div>
+    );
+
     if (!cliente) return <div className="p-8 text-center text-gray-500">No se encontró el cliente.</div>;
 
     // Calcular stock total sumando el stockActual de todos los contenedores
     const stockTotal = cliente.colectas?.reduce((acc, c) => {
-        const stockColecta = c.contenedores?.reduce((sum: number, cont: any) => sum + (cont.stockActual ?? 0), 0) || 0;
+        const stockColecta = c.contenedores?.reduce((sum: number, cont) => sum + (cont.stockActual ?? 0), 0) || 0;
         return acc + stockColecta;
     }, 0) || 0;
 
@@ -115,7 +143,7 @@ export const ClienteDetalle = () => {
                                 </thead>
                                 <tbody>
                                     {cliente.colectas?.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()).map((c) => {
-                                        const stockColecta = c.contenedores?.reduce((sum: number, cont: any) => sum + (cont.stockActual ?? 0), 0) || 0;
+                                        const stockColecta = c.contenedores?.reduce((sum: number, cont) => sum + (cont.stockActual ?? 0), 0) || 0;
                                         return (
                                             <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                                 <td className="py-4 px-4 text-sm text-gray-900 font-medium">
@@ -141,8 +169,8 @@ export const ClienteDetalle = () => {
                                                     ) : "-"}
                                                 </td>
                                                 <td className="py-4 px-4 text-sm font-mono text-gray-500">
-                                                    {c.contenedores?.length > 0
-                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: any) => cont.termo?.codigo).filter(Boolean).join(', ')})`
+                                                    {c.contenedores && c.contenedores.length > 0
+                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont) => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ')})`
                                                         : "-"}
                                                 </td>
                                                 <td className="py-4 px-4 text-sm text-right text-gray-600 font-medium">
@@ -168,7 +196,7 @@ export const ClienteDetalle = () => {
                         {/* Vista de tarjetas para móvil */}
                         <div className="md:hidden space-y-3">
                             {cliente.colectas?.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()).map((c) => {
-                                const stockColecta = c.contenedores?.reduce((sum: number, cont: any) => sum + (cont.stockActual ?? 0), 0) || 0;
+                                const stockColecta = c.contenedores?.reduce((sum: number, cont) => sum + (cont.stockActual ?? 0), 0) || 0;
                                 return (
                                     <div key={c.id} className="card p-4 border border-gray-200 rounded-lg bg-white shadow-sm">
                                         <div className="flex justify-between items-start mb-3">
@@ -207,8 +235,8 @@ export const ClienteDetalle = () => {
                                             <div>
                                                 <div className="text-xs text-gray-500">Contenedores</div>
                                                 <div className="text-sm font-mono text-gray-700">
-                                                    {c.contenedores?.length > 0
-                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: any) => cont.termo?.codigo).filter(Boolean).join(', ')})`
+                                                    {c.contenedores && c.contenedores.length > 0
+                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont) => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ')})`
                                                         : "-"}
                                                 </div>
                                             </div>

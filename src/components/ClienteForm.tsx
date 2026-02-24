@@ -4,11 +4,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { toast } from "sonner";
 
 export const ClienteForm = () => {
     const [razonSocial, setRazonSocial] = useState("");
     const [cuit, setCuit] = useState("");
-    const [mensaje, setMensaje] = useState("");
     const [loading, setLoading] = useState(false);
     const [initialLoading, setInitialLoading] = useState(false);
 
@@ -26,7 +26,7 @@ export const ClienteForm = () => {
                 })
                 .catch((err) => {
                     console.error(err);
-                    setMensaje("Error al cargar el cliente ❌");
+                    toast.error("Error al cargar el cliente");
                 })
                 .finally(() => setInitialLoading(false));
         }
@@ -35,7 +35,6 @@ export const ClienteForm = () => {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        setMensaje("");
 
         // Enviamos solo los datos editables. Si el backend es estricto, enviar 'id' extra puede causar 400.
         const data = { razonSocial, cuit };
@@ -49,28 +48,27 @@ export const ClienteForm = () => {
             }
 
             if (res.status === 201 || res.status === 200) {
-                setMensaje(isEditing ? "Cliente actualizado correctamente ✅" : "Cliente creado correctamente ✅");
+                toast.success(isEditing ? "Cliente actualizado correctamente" : "Cliente creado correctamente");
                 if (!isEditing) {
                     setRazonSocial("");
                     setCuit("");
                 }
                 setTimeout(() => navigate("/Clientes"), 1500);
             } else {
-                setMensaje("Error al guardar el cliente ❌");
+                toast.error("Error al guardar el cliente");
             }
         } catch (err: any) {
             console.error(err);
             if (err.response) {
                 if (err.response.status === 409) {
-                    setMensaje("Error: Ya existe un cliente con esa Razón Social o CUIT ⚠️");
+                    toast.error("Error: Ya existe un cliente con esa Razón Social o CUIT");
                 } else if (err.response.status === 400) {
-                    // Mostramos el mensaje específico del backend para 400 Bad Request
-                    setMensaje(`Error en los datos: ${err.response.data.message || JSON.stringify(err.response.data)} ❌`);
+                    toast.error(`Error en los datos: ${err.response.data.message || "Datos inválidos"}`);
                 } else {
-                    setMensaje(`Error del servidor (${err.response.status}): ${err.response.data.message || ""}`);
+                    toast.error(`Error del servidor (${err.response.status})`);
                 }
             } else {
-                setMensaje("Error de conexión: " + (err.message || ""));
+                toast.error("Error de conexión: " + (err.message || ""));
             }
         } finally {
             setLoading(false);
@@ -129,11 +127,6 @@ export const ClienteForm = () => {
                         </Button>
                     </div>
                 </form>
-                {mensaje && (
-                    <div className={`mt-4 p-3 rounded-md text-sm ${mensaje.includes("✅") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-                        {mensaje}
-                    </div>
-                )}
             </Card>
         </div>
     );

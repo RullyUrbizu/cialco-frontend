@@ -7,6 +7,7 @@ import { useTermos } from "../hooks/useTermos";
 import { useToros } from "../hooks/useToros";
 import { useClientes } from "../hooks/useClientes";
 import { Button } from "./ui/Button";
+import { toast } from "sonner";
 
 interface ColectaModalProps {
   isOpen: boolean;
@@ -174,10 +175,12 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
       if (colectaToEdit) {
         // Modo edición
         response = await api.put(`/colectas/${colectaToEdit.id}`, payload);
+        toast.success("Colecta actualizada correctamente");
         onUpdated?.(response.data);
       } else {
         // Modo creación
         response = await api.post("/colectas", payload);
+        toast.success("Colecta registrada correctamente");
         onCreated?.(response.data);
       }
 
@@ -192,7 +195,9 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
       onClose();
     } catch (err: any) {
       const action = colectaToEdit ? "actualizar" : "crear";
-      setError(`Error al ${action} la colecta: ` + (err.response?.data?.message || err.message || ""));
+      const errorMsg = `Error al ${action} la colecta: ` + (err.response?.data?.message || err.message || "");
+      setError(errorMsg);
+      toast.error(errorMsg);
     } finally {
       setLoading(false);
     }

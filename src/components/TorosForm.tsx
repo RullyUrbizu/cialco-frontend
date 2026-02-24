@@ -5,11 +5,11 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
+import { toast } from "sonner";
 
 export const ToroForm = () => {
   const [nombre, setNombre] = useState("");
   const [raza, setRaza] = useState<RazaEnum>(RazaEnum.AA);
-  const [mensaje, setMensaje] = useState("");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(false);
 
@@ -27,7 +27,7 @@ export const ToroForm = () => {
         })
         .catch((err) => {
           console.error(err);
-          setMensaje("Error al cargar el toro ❌");
+          toast.error("Error al cargar el toro");
         })
         .finally(() => setInitialLoading(false));
     }
@@ -36,7 +36,6 @@ export const ToroForm = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setMensaje("");
 
     const data = { nombre, raza };
 
@@ -49,18 +48,18 @@ export const ToroForm = () => {
       }
 
       if (res.status === 201 || res.status === 200) {
-        setMensaje(isEditing ? "Toro actualizado correctamente ✅" : "Toro creado correctamente ✅");
+        toast.success(isEditing ? "Toro actualizado correctamente" : "Toro creado correctamente");
         if (!isEditing) {
           setNombre("");
           setRaza(RazaEnum.AA);
         }
         setTimeout(() => navigate("/Toros"), 1500);
       } else {
-        setMensaje("Error al guardar el toro ❌");
+        toast.error("Error al guardar el toro");
       }
     } catch (err: any) {
       console.error(err);
-      setMensaje("Error de conexión: " + (err.message || ""));
+      toast.error("Error de conexión: " + (err.message || ""));
     } finally {
       setLoading(false);
     }
@@ -122,11 +121,6 @@ export const ToroForm = () => {
             </Button>
           </div>
         </form>
-        {mensaje && (
-          <div className={`mt-4 p-3 rounded-md text-sm ${mensaje.includes("✅") ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
-            {mensaje}
-          </div>
-        )}
       </Card>
     </div>
   );

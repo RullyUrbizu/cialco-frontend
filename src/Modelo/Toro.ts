@@ -1,4 +1,4 @@
-import type { Colecta } from "./colecta";
+import type { Colecta } from "./Colecta";
 import type { RazaEnum } from "./RazaEnum";
 
 

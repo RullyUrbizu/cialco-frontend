@@ -4,12 +4,13 @@ import { api } from "../api/api";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
 import { ArrowLeft, FileText, History, Database, ExternalLink } from "lucide-react";
+import type { Toro } from "../Modelo/Toro";
+import type { Colecta, ColectaContenedor } from "../Modelo/Colecta";
+import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
+import { toast } from "sonner";
 
-interface ToroDetalleData {
-    id: string;
-    nombre: string;
-    raza: string;
-    colectas: any[];
+interface ToroDetalleData extends Toro {
+    colectas: Colecta[];
 }
 
 export const ToroDetalle = () => {
@@ -26,7 +27,9 @@ export const ToroDetalle = () => {
                 .then((res) => setToro(res.data))
                 .catch((err) => {
                     console.error(err);
-                    setError("Error al cargar los detalles del toro.");
+                    const msg = "Error al cargar los detalles del toro.";
+                    setError(msg);
+                    toast.error(msg);
                 })
                 .finally(() => setLoading(false));
         }
@@ -36,13 +39,38 @@ export const ToroDetalle = () => {
         fetchToro();
     }, [id]);
 
-    if (loading) return <div className="p-8 text-center text-gray-500">Cargando detalles del toro...</div>;
-    if (error) return <div className="p-8 text-center text-red-600">{error}</div>;
+    if (loading) {
+        return (
+            <div className="max-w-5xl mx-auto p-4 md:p-0 space-y-6">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-24" />
+                    <Skeleton className="h-10 w-64" />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <CardSkeleton />
+                    <CardSkeleton />
+                    <CardSkeleton />
+                </div>
+                <Card className="p-6">
+                    <Skeleton className="h-6 w-32 mb-6" />
+                    <TableSkeleton rows={5} />
+                </Card>
+            </div>
+        );
+    }
+
+    if (error) return (
+        <div className="max-w-5xl mx-auto p-8 text-center space-y-4">
+            <div className="text-red-600 font-medium">{error}</div>
+            <Button variant="secondary" onClick={fetchToro}>Reintentar</Button>
+        </div>
+    );
+
     if (!toro) return <div className="p-8 text-center text-gray-500">No se encontró el toro.</div>;
 
     // Calcular stock total sumando el stockActual de todos los contenedores de todas las colectas
-    const stockTotal = toro.colectas?.reduce((acc, c) => {
-        const stockColecta = c.contenedores?.reduce((sum: number, cont: any) => sum + (cont.stockActual ?? 0), 0) || 0;
+    const stockTotal = toro.colectas?.reduce((acc: number, c: Colecta) => {
+        const stockColecta = c.contenedores?.reduce((sum: number, cont: ColectaContenedor) => sum + (cont.stockActual ?? 0), 0) || 0;
         return acc + stockColecta;
     }, 0) || 0;
 
@@ -111,7 +139,7 @@ export const ToroDetalle = () => {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {toro.colectas?.sort((a, b) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()).map((c) => (
+                                    {toro.colectas?.sort((a: Colecta, b: Colecta) => new Date(b.fecha).getTime() - new Date(a.fecha).getTime()).map((c: Colecta) => (
                                         <tr key={c.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
                                             <td className="py-4 px-4 text-sm text-gray-900 font-medium">
                                                 {(() => {
@@ -133,8 +161,8 @@ export const ToroDetalle = () => {
                                                 ) : "-"}
                                             </td>
                                             <td className="py-4 px-4 text-sm font-mono text-gray-500">
-                                                {c.contenedores?.length > 0
-                                                    ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: any) => cont.termo?.codigo).filter(Boolean).join(', ')})`
+                                                {c.contenedores && c.contenedores.length > 0
+                                                    ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: ColectaContenedor) => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ')})`
                                                     : "-"}
                                             </td>
                                             <td className="py-4 px-4 text-sm text-right text-gray-600 font-medium">
@@ -142,7 +170,7 @@ export const ToroDetalle = () => {
                                             </td>
                                             <td className="py-4 px-4 text-right">
                                                 {(() => {
-                                                    const stockColecta = c.contenedores?.reduce((sum: number, cont: any) => sum + (cont.stockActual ?? 0), 0) || 0;
+                                                    const stockColecta = c.contenedores?.reduce((sum: number, cont: ColectaContenedor) => sum + (cont.stockActual ?? 0), 0) || 0;
                                                     return (
                                                         <span className={`text-sm font-bold ${stockColecta > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                             {stockColecta}
@@ -203,8 +231,8 @@ export const ToroDetalle = () => {
                                             <div>
                                                 <div className="text-xs text-gray-500">Contenedores</div>
                                                 <div className="text-sm font-mono text-gray-700">
-                                                    {c.contenedores?.length > 0
-                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: any) => cont.termo?.codigo).filter(Boolean).join(', ')})`
+                                                    {c.contenedores && c.contenedores.length > 0
+                                                        ? `${c.contenedores.length} cont. (${c.contenedores.map((cont: ColectaContenedor) => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ')})`
                                                         : "-"}
                                                 </div>
                                             </div>

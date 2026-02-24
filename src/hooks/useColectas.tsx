@@ -15,7 +15,7 @@ export const useColectas = () => {
     try {
       const res = await api.get("/colectas");
       setColectas(res.data);
-    } catch (err: any) {
+    } catch (err) {
       setError("Error cargando colectas");
     } finally {
       setLoading(false);
@@ -30,8 +30,9 @@ export const useColectas = () => {
     try {
       await api.delete(`/colectas/${id}`);
       setColectas(current => current.filter(c => c.id !== id));
-    } catch (error: any) {
-      throw new Error(error.response?.data?.message || "Error al eliminar colecta");
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : "Error al eliminar colecta";
+      throw new Error(message);
     }
   };
 

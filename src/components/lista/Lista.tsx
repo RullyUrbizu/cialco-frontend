@@ -90,7 +90,7 @@ export const Lista = <T,>({ items, columns, filterFields, renderCells, onRowClic
                   style={customStyle}
                 >
                   {renderCells(item).map((cell, cellIndex) => (
-                    <td key={cellIndex} className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                    <td key={cellIndex} className="px-6 py-4 text-sm text-gray-700">
                       {cell}
                     </td>
                   ))}

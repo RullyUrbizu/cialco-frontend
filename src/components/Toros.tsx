@@ -7,6 +7,8 @@ import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
+import { toast } from "sonner";
+import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 
 export const Toros = () => {
   const { toros, loading, error, deleteToro } = useToros(); // <-- deleteToro
@@ -39,14 +41,33 @@ export const Toros = () => {
     if (window.confirm(`¿Seguro que deseas eliminar al toro "${toro.nombre}"?`)) {
       try {
         await deleteToro(toro.id);
+        toast.success(`Toro "${toro.nombre}" eliminado correctamente`);
       } catch (err: any) {
-        alert(err.message);
+        toast.error(err.message || "Error al eliminar el toro");
       }
     }
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Cargando toros...</div>;
-  if (error) return <div className="p-6 text-red-600 bg-red-50 rounded-lg">{error}</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-48" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <CardSkeleton />
+        <Card className="p-6">
+          <TableSkeleton rows={8} />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) return (
+    <div className="p-6 text-red-600 bg-red-50 rounded-lg border border-red-100 text-center font-medium">
+      {error}
+    </div>
+  );
 
   return (
     <>

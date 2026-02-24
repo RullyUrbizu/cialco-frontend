@@ -45,7 +45,18 @@ VITE_APP_NAME=Cialco Stock
 
 Asegúrate de que el backend esté ejecutándose en la URL especificada en `VITE_API_URL`.
 
-## Ejecutar la aplicación
+## 🚀 Ejecución con Docker
+
+Este repositorio incluye un archivo `docker-compose.yml` para probar la versión de producción (servida con Nginx) rápidamente:
+
+1.  Asegúrate de tener **Docker Desktop** instalado.
+2.  Desde la raíz de este repositorio, ejecuta:
+    ```bash
+    docker-compose up -d
+    ```
+3.  La aplicación estará disponible en `http://localhost`.
+
+## Ejecutar la aplicación (Desarrollo Manual)
 
 ### Modo desarrollo
 

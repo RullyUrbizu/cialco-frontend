@@ -1,0 +1,7 @@
+services:
+  frontend:
+    build: .
+    container_name: cialco-frontend-dev
+    restart: always
+    ports:
+      - "80:80"

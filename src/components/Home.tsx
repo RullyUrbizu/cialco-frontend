@@ -8,6 +8,8 @@ import { Lista } from "./lista/Lista";
 import { Link, useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { toast } from "sonner";
+import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 
 export const Home = () => {
   const { colectas, loading, error, deleteColecta, updateColecta } = useColectas();
@@ -45,8 +47,9 @@ export const Home = () => {
     if (window.confirm("¿Seguro que deseas eliminar esta colecta?")) {
       try {
         await deleteColecta(id);
+        toast.success("Colecta eliminada correctamente");
       } catch (err: any) {
-        alert(err.message);
+        toast.error(err.message || "Error al eliminar la colecta");
       }
     }
   };
@@ -86,7 +89,7 @@ export const Home = () => {
     // Preparar datos para la tabla
     const tableData = colectasFiltradas.map(c => [
       c.contenedores?.length ? `${c.contenedores.length} contenedor(es)` : "-",
-      c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-",
+      c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
       c.toro?.nombre || "-",
       c.toro?.raza || "-",
       c.cantidad?.toString() || "0",
@@ -115,8 +118,30 @@ export const Home = () => {
     doc.save(fileName);
   };
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Cargando colectas...</div>;
-  if (error) return <div className="p-6 text-red-600 bg-red-50 rounded-lg">{error}</div>;
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <Skeleton className="h-10 w-48" />
+          <div className="flex gap-2">
+            <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-48" />
+          </div>
+        </div>
+        <CardSkeleton />
+        <Card className="p-6">
+          <TableSkeleton rows={8} />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error) return (
+    <div className="max-w-4xl mx-auto p-8 text-center space-y-4">
+      <div className="text-red-600 font-medium bg-red-50 p-6 rounded-lg border border-red-100">{error}</div>
+      {/* Note: Colectas hook handles error state, but we provide a clean message */}
+    </div>
+  );
 
   return (
     <>
@@ -177,15 +202,20 @@ export const Home = () => {
                 }}
                 renderCells={(c: Colecta) => [
                   <span className="font-semibold text-gray-700">{c.contenedores?.length || 0} cont.</span>,
-                  <span className="font-mono text-gray-600 text-xs">
-                    {c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-"}
-                  </span>,
+                  <div className="flex flex-col gap-1 min-w-[120px]">
+                    {c.contenedores?.map((cont, idx) => (
+                      <div key={idx} className="font-mono text-gray-600 text-[10px] bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 flex justify-between">
+                        <span className="font-bold">{cont.termo?.codigo ?? "-"}</span>
+                        <span className="text-gray-400">({cont.canastillo?.codigo ?? "-"})</span>
+                      </div>
+                    )) || "-"}
+                  </div>,
                   <Link to={`/toros/${c.toro?.id}`} className="font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
                     {c.toro?.nombre ?? "-"}
                   </Link>,
                   <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
                   <span className="font-semibold text-blue-600">{c.cantidad ?? 0}</span>,
-                  <span className="text-gray-500 text-sm">
+                  <span className="text-gray-500 text-sm whitespace-nowrap">
                     {c.fecha ? (() => {
                       const parts = String(c.fecha).split('T')[0].split('-');
                       if (parts.length === 3) {
@@ -204,7 +234,7 @@ export const Home = () => {
                   >
                     {c.cliente?.razonSocial ?? "-"}
                   </span>,
-                  <div className="flex gap-2">
+                  <div className="flex gap-2 whitespace-nowrap">
                     <Link to={`/colectas/${c.id}`}>
                       <Button size="sm" variant="info">Ver</Button>
                     </Link>
@@ -281,7 +311,7 @@ export const Home = () => {
                     <div className="flex items-center gap-2">
                       <span className="text-gray-500">Termos:</span>
                       <span className="font-mono text-xs">
-                        {c.contenedores?.map(cont => cont.termo?.codigo).filter(Boolean).join(', ') || "-"}
+                        {c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
