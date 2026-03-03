@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { api } from "../api/api";
 import { Button } from "./ui/Button";
-import { X, Package } from "lucide-react";
+import { X } from "lucide-react";
+import { TermoIcon } from "./ui/TermoIcon";
 import type { ColectaContenedor } from "../Modelo/Colecta";
 
 interface MovimientoModalProps {
@@ -29,6 +30,7 @@ export const MovimientoModal = ({
     const [contenedores, setContenedores] = useState<ColectaContenedor[]>([]);
     const [distribucion, setDistribucion] = useState<Record<string, string>>({});
     const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
+    const [remito, setRemito] = useState("");
     const [observaciones, setObservaciones] = useState("");
     const [loading, setLoading] = useState(false);
     const [loadingContenedores, setLoadingContenedores] = useState(false);
@@ -135,12 +137,14 @@ export const MovimientoModal = ({
                 tipo: tipo,
                 cantidad: total,
                 notas: observaciones,
+                remito: remito || null,
                 fecha: new Date().toLocaleString('sv-SE').replace(' ', 'T'),
                 contenedoresDistribucion
             });
 
             // Resetear form
             setObservaciones("");
+            setRemito("");
             setFecha(new Date().toISOString().split('T')[0]);
 
             const resetDistribucion: Record<string, string> = {};
@@ -188,7 +192,7 @@ export const MovimientoModal = ({
                     {/* Distribución por contenedores */}
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-3">
-                            <Package className="inline mr-2" size={16} />
+                            <TermoIcon className="inline mr-2" size={16} />
                             Distribución por contenedores
                         </label>
 
@@ -269,15 +273,28 @@ export const MovimientoModal = ({
 
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Remito / Motivo
+                            N° de Remito
+                        </label>
+                        <input
+                            type="text"
+                            value={remito}
+                            onChange={(e) => setRemito(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            placeholder="Ej: 0001-00001234"
+                            maxLength={50}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Motivo / Observaciones
                         </label>
                         <textarea
                             value={observaciones}
                             onChange={(e) => setObservaciones(e.target.value)}
-                            required
-                            rows={3}
+                            rows={2}
                             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
-                            placeholder="Ej: Remito N° 12345 o 'Sin remito - Entrega directa'"
+                            placeholder="Notas adicionales..."
                         />
                     </div>
 

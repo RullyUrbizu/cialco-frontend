@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { Menu, X, Home, Users, Beef, Container, ExternalLink } from "lucide-react";
+import { Menu, X, Home, Users, ExternalLink, FileText, History } from "lucide-react";
+import { ToroIcon } from "./ui/ToroIcon";
+import { TermoIcon } from "./ui/TermoIcon";
 import { Link, useLocation } from "react-router-dom";
 
 export const Sidebar = () => {
@@ -10,9 +12,11 @@ export const Sidebar = () => {
 
   const menuItems = [
     { path: "/", label: "Stock", icon: Home },
-    { path: "/termos", label: "Termos", icon: Container },
+    { path: "/termos", label: "Termos", icon: TermoIcon },
+    { path: "/remitos", label: "Remitos", icon: FileText },
+    { path: "/historial", label: "Historial", icon: History },
     { path: "/Clientes", label: "Clientes", icon: Users },
-    { path: "/Toros", label: "Toros", icon: Beef },
+    { path: "/Toros", label: "Toros", icon: ToroIcon },
   ];
 
   const isActive = (path: string) => location.pathname === path;

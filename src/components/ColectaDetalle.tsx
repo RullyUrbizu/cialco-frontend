@@ -310,6 +310,7 @@ export const ColectaDetalle = () => {
                                 <tr className="border-b border-gray-200 bg-gray-50">
                                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
                                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
+                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Remito</th>
                                     <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
                                     <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Notas</th>
                                 </tr>
@@ -338,6 +339,9 @@ export const ColectaDetalle = () => {
                                                 }`}>
                                                 {mov.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Salida'}
                                             </span>
+                                        </td>
+                                        <td className="py-3 px-4 text-sm font-mono text-gray-700">
+                                            {mov.remito || '-'}
                                         </td>
                                         <td className={`py-3 px-4 text-sm font-semibold text-right ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
                                             }`}>

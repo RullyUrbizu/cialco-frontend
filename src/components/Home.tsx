@@ -17,8 +17,7 @@ export const Home = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   // --- estados para filtrado ---
-  const [razonSocial, setRazonSocial] = useState("");
-  const [nombreToro, setNombreToro] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [colectasFiltradas, setColectasFiltradas] = useState<Colecta[]>([]);
   const [colectaToEdit, setColectaToEdit] = useState<Colecta | undefined>();
 
@@ -31,17 +30,22 @@ export const Home = () => {
   useEffect(() => {
     if (!colectas) return;
 
+    const term = searchTerm.toLowerCase();
     const filtradas = colectas.filter((c) => {
-      const matchCliente = c.cliente?.razonSocial
-        ?.toLowerCase()
-        .includes(razonSocial.toLowerCase());
-      const matchToro = c.toro?.nombre
-        ?.toLowerCase()
-        .includes(nombreToro.toLowerCase());
-      return matchCliente && matchToro;
+      const matchCliente = c.cliente?.razonSocial?.toLowerCase().includes(term);
+      const matchToro = c.toro?.nombre?.toLowerCase().includes(term);
+      const matchRaza = c.toro?.raza?.toLowerCase().includes(term);
+
+      // Búsqueda en contenedores (termos y canastillos)
+      const matchContenedores = c.contenedores?.some(cont =>
+        cont.termo?.codigo?.toLowerCase().includes(term) ||
+        cont.canastillo?.codigo?.toString().toLowerCase().includes(term)
+      );
+
+      return matchCliente || matchToro || matchRaza || matchContenedores;
     });
     setColectasFiltradas(filtradas);
-  }, [razonSocial, nombreToro, colectas]);
+  }, [searchTerm, colectas]);
 
   const handleDelete = async (id: string) => {
     if (window.confirm("¿Seguro que deseas eliminar esta colecta?")) {
@@ -76,13 +80,10 @@ export const Home = () => {
     doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, 14, 28);
 
     // Información de filtros aplicados
-    if (razonSocial || nombreToro) {
+    if (searchTerm) {
       doc.setFontSize(9);
       doc.setTextColor(100);
-      let filtrosTexto = "Filtros aplicados: ";
-      if (razonSocial) filtrosTexto += `Cliente: "${razonSocial}" `;
-      if (nombreToro) filtrosTexto += `Toro: "${nombreToro}"`;
-      doc.text(filtrosTexto, 14, 34);
+      doc.text(`Filtros aplicados: Búsqueda "${searchTerm}"`, 14, 34);
       doc.setTextColor(0);
     }
 
@@ -99,7 +100,7 @@ export const Home = () => {
 
     // Generar tabla
     autoTable(doc, {
-      startY: razonSocial || nombreToro ? 38 : 32,
+      startY: searchTerm ? 38 : 32,
       head: [["Contenedores", "Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
       body: tableData,
       theme: 'grid',
@@ -145,43 +146,30 @@ export const Home = () => {
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-        <div>
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+        <div className="w-full lg:w-auto">
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Lista de Stock</h1>
           <p className="text-gray-500 mt-1">Gestiona el inventario de colectas.</p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={exportToPDF} variant="secondary">
+        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-3">
+          <Button onClick={exportToPDF} variant="secondary" className="w-full sm:w-auto flex items-center justify-center gap-2">
             📄 Exportar PDF
           </Button>
-          <Button onClick={() => setModalOpen(true)}>
+          <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto">
             Registrar nueva colecta
           </Button>
         </div>
       </div>
 
       <Card className="mb-8 p-4">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Buscar Cliente</label>
-            <input
-              type="text"
-              placeholder="Ej: Estancia El Rancho..."
-              value={razonSocial}
-              onChange={(e) => setRazonSocial(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">Buscar Toro</label>
-            <input
-              type="text"
-              placeholder="Ej: Angus..."
-              value={nombreToro}
-              onChange={(e) => setNombreToro(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-            />
-          </div>
+        <div className="relative">
+          <input
+            type="text"
+            placeholder="Buscar por toro, cliente, termo o canastillo..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full border border-gray-300 rounded-lg pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-lg"
+          />
         </div>
       </Card>
 

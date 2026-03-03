@@ -9,6 +9,8 @@ import { ColectaDetalle } from "./components/ColectaDetalle";
 import { ToroDetalle } from "./components/ToroDetalle";
 import { ClienteDetalle } from "./components/ClienteDetalle";
 import { TermosView } from "./components/TermosView";
+import { RemitosView } from "./components/RemitosView";
+import { HistorialView } from "./components/HistorialView";
 
 export const App = () => {
   return (
@@ -26,6 +28,8 @@ export const App = () => {
           <Route path="/editar-cliente/:id" element={<ClienteForm />} />
           <Route path="/colectas/:id" element={<ColectaDetalle />} />
           <Route path="/termos" element={<TermosView />} />
+          <Route path="/remitos" element={<RemitosView />} />
+          <Route path="/historial" element={<HistorialView />} />
         </Routes>
       </Layout>
     </Router>

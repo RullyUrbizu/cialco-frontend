@@ -4,14 +4,14 @@ Frontend del sistema de gestión de stock para Cialco, desarrollado con React, T
 
 ## Descripción
 
-Aplicación web moderna para la gestión integral de stock, clientes, movimientos de inventario y colectas. Interfaz de usuario intuitiva y responsive con Material-UI.
+Aplicación web moderna para la gestión integral de stock, clientes, movimientos de inventario y colectas. Interfaz de usuario intuitiva y responsive con Tailwind CSS.
 
 ## Tecnologías
 
 - **Framework**: React 18
 - **Lenguaje**: TypeScript
 - **Build Tool**: Vite
-- **UI Framework**: Material-UI (MUI)
+- **UI Framework**: Tailwind CSS
 - **Routing**: React Router v6
 - **HTTP Client**: Axios
 - **Gestión de estado**: React Context API

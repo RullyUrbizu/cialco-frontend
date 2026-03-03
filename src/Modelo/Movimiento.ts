@@ -16,5 +16,22 @@ export interface Movimiento {
     clienteId: string | null;
     cliente?: Cliente;
     notas: string | null;
+    remito: string | null;
+    inventario?: {
+        id: string;
+        colecta: {
+            id: string;
+            fecha: Date;
+            toro: {
+                id: string;
+                nombre: string;
+                raza: string;
+            };
+            cliente: {
+                id: string;
+                razonSocial: string;
+            };
+        };
+    };
     created_at?: Date;
 }
