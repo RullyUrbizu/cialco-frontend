@@ -341,7 +341,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
                         required
                       >
                         <option value="">Seleccione...</option>
-                        {termos.map((t) => (
+                        {termos.filter(t => t.activo).map((t) => (
                           <option key={t.id} value={t.id}>{t.codigo}</option>
                         ))}
                       </select>

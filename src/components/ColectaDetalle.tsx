@@ -4,9 +4,10 @@ import { api } from "../api/api";
 import type { Colecta } from "../Modelo/Colecta";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
-import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, History, TrendingUp } from "lucide-react";
+import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, History, TrendingUp, MoveHorizontal } from "lucide-react";
 import { MovimientoModal } from "./MovimientoModal";
 import { ColectaModal } from "./ColectaModal";
+import { TransferenciaModal } from "./TransferenciaModal";
 import { useMovimientos } from "../hooks/useMovimientos";
 import { Skeleton, CardSkeleton } from "./ui/Skeleton";
 import { toast } from "sonner";
@@ -20,6 +21,10 @@ export const ColectaDetalle = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [ingresoModalOpen, setIngresoModalOpen] = useState(false);
     const [editModalOpen, setEditModalOpen] = useState(false);
+    const [transferModal, setTransferModal] = useState<{ isOpen: boolean; origen: any }>({
+        isOpen: false,
+        origen: null
+    });
     const { movimientos, loading: loadingMovimientos, refetch: refetchMovimientos } = useMovimientos(
         colecta?.inventario?.id
     );
@@ -245,6 +250,28 @@ export const ColectaDetalle = () => {
                                             </span>
                                         </div>
                                     </div>
+
+                                    {(contenedor.stockActual ?? 0) > 0 && (
+                                        <div className="mt-3 flex justify-end border-t border-gray-100 pt-2">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                className="text-blue-600 hover:bg-blue-50 py-1"
+                                                onClick={() => setTransferModal({
+                                                    isOpen: true,
+                                                    origen: {
+                                                        id: contenedor.id,
+                                                        termo: contenedor.termo?.codigo || "-",
+                                                        canastillo: contenedor.canastillo?.codigo || "-",
+                                                        stockActual: contenedor.stockActual
+                                                    }
+                                                })}
+                                            >
+                                                <MoveHorizontal className="mr-2 h-4 w-4" />
+                                                Mover
+                                            </Button>
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
@@ -395,6 +422,18 @@ export const ColectaDetalle = () => {
                     onUpdated={() => {
                         fetchColecta();
                         setEditModalOpen(false);
+                    }}
+                />
+            )}
+
+            {transferModal.isOpen && transferModal.origen && (
+                <TransferenciaModal
+                    isOpen={transferModal.isOpen}
+                    origen={transferModal.origen}
+                    onClose={() => setTransferModal({ ...transferModal, isOpen: false })}
+                    onSuccess={() => {
+                        fetchColecta();
+                        refetchMovimientos();
                     }}
                 />
             )}

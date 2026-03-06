@@ -11,6 +11,7 @@ import { ClienteDetalle } from "./components/ClienteDetalle";
 import { TermosView } from "./components/TermosView";
 import { RemitosView } from "./components/RemitosView";
 import { HistorialView } from "./components/HistorialView";
+import { Toaster } from "sonner";
 
 export const App = () => {
   return (
@@ -32,6 +33,7 @@ export const App = () => {
           <Route path="/historial" element={<HistorialView />} />
         </Routes>
       </Layout>
+      <Toaster position="top-right" richColors closeButton autoClose={5000} />
     </Router>
   );
 };

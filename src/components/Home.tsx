@@ -10,6 +10,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
+import { ConfirmModal } from "./ui/ConfirmModal";
 
 export const Home = () => {
   const { colectas, loading, error, deleteColecta, updateColecta } = useColectas();
@@ -20,6 +21,11 @@ export const Home = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [colectasFiltradas, setColectasFiltradas] = useState<Colecta[]>([]);
   const [colectaToEdit, setColectaToEdit] = useState<Colecta | undefined>();
+
+  // --- estados para confirmación de borrado ---
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // --- sincronizamos colectas originales con filtradas ---
   useEffect(() => {
@@ -47,14 +53,26 @@ export const Home = () => {
     setColectasFiltradas(filtradas);
   }, [searchTerm, colectas]);
 
-  const handleDelete = async (id: string) => {
-    if (window.confirm("¿Seguro que deseas eliminar esta colecta?")) {
-      try {
-        await deleteColecta(id);
-        toast.success("Colecta eliminada correctamente");
-      } catch (err: any) {
-        toast.error(err.message || "Error al eliminar la colecta");
-      }
+
+
+  const handleDeleteClick = (id: string) => {
+    setIdToDelete(id);
+    setIsConfirmOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!idToDelete) return;
+
+    setIsDeleting(true);
+    try {
+      await deleteColecta(idToDelete);
+      toast.success("Colecta eliminada correctamente");
+      setIsConfirmOpen(false);
+      setIdToDelete(null);
+    } catch (err: any) {
+      toast.error(err.message || "Error al eliminar la colecta");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -70,26 +88,44 @@ export const Home = () => {
 
   const exportToPDF = () => {
     const doc = new jsPDF();
+    const azulCialco = [0, 51, 153];
+    const grisOscuro = [60, 60, 60];
+    const grisClaro = [150, 150, 150];
 
-    // Título
-    doc.setFontSize(18);
-    doc.text("Stock de Colectas - Cialco", 14, 20);
+    // --- ENCABEZADO CORPORATIVO ---
+    // Nombre de la Empresa
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(24);
+    doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+    doc.text("CIALCO", 14, 22);
 
-    // Fecha de generación
+    // Eslogan
+    doc.setFont("helvetica", "italic");
     doc.setFontSize(10);
-    doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, 14, 28);
+    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+    doc.text("Agregá valor a tu producción", 14, 28);
 
-    // Información de filtros aplicados
+    // Título del Reporte e Info de Emisión
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+    doc.text("REPORTE DE STOCK DE COLECTAS", 14, 45);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+    doc.text(`Fecha de emisión: ${new Date().toLocaleString('es-AR')}`, 14, 50);
+
+    // Filtros aplicados
     if (searchTerm) {
-      doc.setFontSize(9);
-      doc.setTextColor(100);
-      doc.text(`Filtros aplicados: Búsqueda "${searchTerm}"`, 14, 34);
-      doc.setTextColor(0);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Filtros: `, 14, 56);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Búsqueda "${searchTerm}"`, 26, 56);
     }
 
-    // Preparar datos para la tabla
+    // --- TABLA DE DATOS ---
     const tableData = colectasFiltradas.map(c => [
-      c.contenedores?.length ? `${c.contenedores.length} contenedor(es)` : "-",
       c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
       c.toro?.nombre || "-",
       c.toro?.raza || "-",
@@ -98,25 +134,72 @@ export const Home = () => {
       c.cliente?.razonSocial || "-"
     ]);
 
-    // Generar tabla
     autoTable(doc, {
-      startY: searchTerm ? 38 : 32,
-      head: [["Contenedores", "Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
+      startY: 62,
+      head: [["Ubicación (Termo/Canast)", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
       body: tableData,
-      theme: 'grid',
-      headStyles: { fillColor: [59, 130, 246], textColor: 255 },
-      styles: { fontSize: 8, cellPadding: 2 },
-      alternateRowStyles: { fillColor: [245, 247, 250] },
+      theme: 'striped',
+      headStyles: {
+        fillColor: azulCialco as [number, number, number],
+        textColor: 255,
+        fontSize: 9,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+        valign: 'middle'
+      },
+      columnStyles: {
+        3: { halign: 'center', fontStyle: 'bold' }, // Cantidad
+        4: { halign: 'center' } // Fecha
+      },
+      alternateRowStyles: {
+        fillColor: [245, 248, 255]
+      },
+      margin: { top: 62 },
+      didDrawPage: (data) => {
+        // --- PIE DE PÁGINA (Se repite en cada página) ---
+        const pageSize = doc.internal.pageSize;
+        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
+
+        doc.setFontSize(8);
+        doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+
+        // Línea divisoria
+        doc.setDrawColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+        doc.line(14, pageHeight - 25, pageSize.width - 14, pageHeight - 25);
+
+        // Información de contacto
+        const contactY = pageHeight - 20;
+        doc.text("Av. 25 de Mayo 659, Gral. Belgrano, Buenos Aires", 14, contactY);
+        doc.text("Tel: +54 22 4154-5133 | cialco107@yahoo.com.ar", 14, contactY + 4);
+        doc.text("www.cialco.netlify.app", 14, contactY + 8);
+
+        // Numeración
+        const str = "Página " + (doc as any).internal.getNumberOfPages();
+        doc.text(str, pageSize.width - 30, contactY + 8);
+      }
     });
 
-    // Pie de página con total
-    const finalY = (doc as any).lastAutoTable.finalY || 40;
-    doc.setFontSize(10);
-    doc.text(`Total de colectas: ${colectasFiltradas.length}`, 14, finalY + 10);
+    // Resumen Final
+    const finalY = (doc as any).lastAutoTable.finalY || 100;
+    const totalDosis = colectasFiltradas.reduce((acc, c) => acc + (c.cantidad || 0), 0);
+
+    if (finalY < 250) { // Evitar pisar el footer
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+      doc.text(`Stock Total del Reporte: ${totalDosis} dosis`, 14, finalY + 15);
+      doc.setFontSize(8);
+      doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+      doc.text(`Total de registros: ${colectasFiltradas.length} colectas`, 14, finalY + 20);
+    }
 
     // Guardar PDF
-    const fileName = `stock-colectas-${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
+    const timestamp = new Date().toISOString().split('T')[0];
+    doc.save(`cialco-reporte-stock-${timestamp}.pdf`);
   };
 
   if (loading) {
@@ -146,17 +229,19 @@ export const Home = () => {
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div className="w-full lg:w-auto">
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Lista de Stock</h1>
-          <p className="text-gray-500 mt-1">Gestiona el inventario de colectas.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Lista de Stock</h1>
+          <p className="text-sm text-gray-500 mt-1">Inventario de colectas.</p>
         </div>
-        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-3">
-          <Button onClick={exportToPDF} variant="secondary" className="w-full sm:w-auto flex items-center justify-center gap-2">
-            📄 Exportar PDF
+        <div className="flex flex-row w-full lg:w-auto gap-2">
+          <Button onClick={exportToPDF} variant="secondary" className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm py-2">
+            <span className="hidden sm:inline">📄 Exportar PDF</span>
+            <span className="sm:hidden">📄 PDF</span>
           </Button>
-          <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto">
-            Registrar nueva colecta
+          <Button onClick={() => setModalOpen(true)} className="flex-[2] sm:flex-none text-sm py-2">
+            <span className="hidden sm:inline">Registrar nueva colecta</span>
+            <span className="sm:hidden">+ Nueva Colecta</span>
           </Button>
         </div>
       </div>
@@ -180,7 +265,7 @@ export const Home = () => {
             <div className="hidden md:block">
               <Lista
                 items={colectasFiltradas}
-                columns={["Contenedores", "Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente", "Acciones"]}
+                columns={["Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente", "Acciones"]}
                 onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
                 getRowStyle={(c: Colecta) => {
                   const nombre = c.cliente?.razonSocial || "";
@@ -189,7 +274,6 @@ export const Home = () => {
                   return { backgroundColor: `hsl(${hue}, 45%, 95%)` };
                 }}
                 renderCells={(c: Colecta) => [
-                  <span className="font-semibold text-gray-700">{c.contenedores?.length || 0} cont.</span>,
                   <div className="flex flex-col gap-1 min-w-[120px]">
                     {c.contenedores?.map((cont, idx) => (
                       <div key={idx} className="font-mono text-gray-600 text-[10px] bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 flex justify-between">
@@ -242,7 +326,7 @@ export const Home = () => {
                       variant="danger"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(c.id);
+                        handleDeleteClick(c.id);
                       }}
                     >
                       Eliminar
@@ -253,31 +337,36 @@ export const Home = () => {
             </div>
 
             {/* Vista de tarjetas para móvil */}
-            <div className="md:hidden p-4 space-y-4">
+            <div className="md:hidden p-3 space-y-4 bg-gray-50/50">
               {colectasFiltradas.map((c: Colecta) => (
                 <div
                   key={c.id}
-                  className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow"
-                  style={{
-                    backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 45%, 95%)` : '#f9fafb'
-                  }}
+                  className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
                   onClick={() => navigate(`/colectas/${c.id}`)}
                 >
-                  {/* Header con Toro y Fecha */}
-                  <div className="flex justify-between items-start mb-3">
-                    <div>
-                      <Link
-                        to={`/toros/${c.toro?.id}`}
-                        className="font-bold text-lg text-blue-600 hover:underline"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        {c.toro?.nombre ?? "-"}
-                      </Link>
-                      <div className="text-sm text-gray-600">{c.toro?.raza ?? "-"}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-xs text-gray-500">
-                        {c.fecha ? (() => {
+                  {/* Indicador lateral de color cliente */}
+                  <div
+                    className="absolute left-0 top-0 bottom-0 w-1.5"
+                    style={{ backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 60%)` : '#d1d5db' }}
+                  />
+
+                  {/* Header: Toro y Cantidad */}
+                  <div className="flex justify-between items-start gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <Link
+                          to={`/toros/${c.toro?.id}`}
+                          className="font-bold text-lg text-gray-900 truncate hover:text-blue-600 block"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {c.toro?.nombre ?? "-"}
+                        </Link>
+                        <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded uppercase tracking-wider">
+                          {c.toro?.raza ?? "-"}
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-gray-400 font-medium">
+                        📅 {c.fecha ? (() => {
                           const parts = String(c.fecha).split('T')[0].split('-');
                           if (parts.length === 3) {
                             const [y, m, d] = parts;
@@ -286,63 +375,74 @@ export const Home = () => {
                           return String(c.fecha);
                         })() : "-"}
                       </div>
-                      <div className="font-bold text-blue-600 text-lg">{c.cantidad ?? 0}</div>
+                    </div>
+
+                    <div className="flex flex-col items-end">
+                      <div className="text-[10px] text-gray-400 uppercase font-black tracking-tighter mb-[-4px]">Dosis</div>
+                      <div className="text-2xl font-black text-blue-600 tabular-nums">
+                        {c.cantidad ?? 0}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Info de contenedores y cliente */}
-                  <div className="space-y-2 mb-3 text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Contenedores:</span>
-                      <span className="font-semibold">{c.contenedores?.length || 0}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Termos:</span>
-                      <span className="font-mono text-xs">
-                        {c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-"}
+                  {/* Detalles con diseño de etiquetas */}
+                  <div className="flex flex-wrap gap-2 mb-5">
+                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
+                      <span className="text-gray-400 text-[10px]">📍</span>
+                      <span className="font-mono text-[11px] font-bold text-gray-600">
+                        {c.contenedores?.map(cont => cont.termo?.codigo ?? "-").filter((v, i, a) => a.indexOf(v) === i).join('-') || "-"}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-gray-500">Cliente:</span>
-                      <span
-                        className="px-2 py-0.5 rounded text-xs font-semibold"
-                        style={{
-                          backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 85%)` : '#e5e7eb',
-                          color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 30%)` : '#1f2937'
-                        }}
-                      >
+                    <div
+                      className="flex items-center gap-1.5 px-2 py-1 rounded-md border"
+                      style={{
+                        backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 97%)` : '#f9fafb',
+                        borderColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 90%)` : '#f3f4f6',
+                        color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 35%)` : '#4b5563'
+                      }}
+                    >
+                      <span className="text-[10px]">👤</span>
+                      <span className="text-[11px] font-bold truncate max-w-[120px]">
                         {c.cliente?.razonSocial ?? "-"}
                       </span>
                     </div>
                   </div>
 
-                  {/* Botones de acción */}
-                  <div className="flex gap-2 pt-3 border-t border-gray-200">
-                    <Link to={`/colectas/${c.id}`} className="flex-1" onClick={(e) => e.stopPropagation()}>
-                      <Button size="sm" variant="info" className="w-full">Ver</Button>
-                    </Link>
+                  {/* Acciones compactas */}
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-50">
+                    <Button
+                      size="sm"
+                      variant="info"
+                      className="h-9 text-xs font-bold"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/colectas/${c.id}`);
+                      }}
+                    >
+                      DETALLE
+                    </Button>
                     <Button
                       size="sm"
                       variant="warning"
-                      className="flex-1"
+                      className="h-9 text-xs font-bold"
                       onClick={(e) => {
                         e.stopPropagation();
                         setColectaToEdit(c);
                         setModalOpen(true);
                       }}
                     >
-                      Editar
+                      EDITAR
                     </Button>
                     <Button
                       size="sm"
                       variant="danger"
-                      className="flex-1"
+                      className="h-9 text-xs font-bold"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleDelete(c.id);
+                        handleDeleteClick(c.id);
                       }}
                     >
-                      Eliminar
+                      BORRAR
                     </Button>
                   </div>
                 </div>
@@ -371,6 +471,17 @@ export const Home = () => {
           updateColecta(colectaActualizada);
           setColectaToEdit(undefined);
         }}
+      />
+      <ConfirmModal
+        isOpen={isConfirmOpen}
+        onClose={() => setIsConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Eliminar Colecta"
+        message="¿Estás seguro de que deseas eliminar esta colecta? Esta acción no se puede deshacer y afectará el stock actual."
+        confirmText="ELIMINAR"
+        variant="danger"
+        icon="trash"
+        isLoading={isDeleting}
       />
     </>
   );
