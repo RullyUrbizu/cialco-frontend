@@ -37,7 +37,13 @@ export const Home = () => {
     if (!colectas) return;
 
     const term = searchTerm.toLowerCase();
-    const filtradas = colectas.filter((c) => {
+    const colectasSorted = [...colectas].sort((a, b) => {
+      const dateA = a.fecha ? new Date(a.fecha).getTime() : 0;
+      const dateB = b.fecha ? new Date(b.fecha).getTime() : 0;
+      return dateB - dateA;
+    });
+
+    const filtradas = colectasSorted.filter((c) => {
       const matchCliente = c.cliente?.razonSocial?.toLowerCase().includes(term);
       const matchToro = c.toro?.nombre?.toLowerCase().includes(term);
       const matchRaza = c.toro?.raza?.toLowerCase().includes(term);
@@ -159,7 +165,7 @@ export const Home = () => {
         fillColor: [245, 248, 255]
       },
       margin: { top: 62 },
-      didDrawPage: (data) => {
+      didDrawPage: () => {
         // --- PIE DE PÁGINA (Se repite en cada página) ---
         const pageSize = doc.internal.pageSize;
         const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
@@ -232,14 +238,13 @@ export const Home = () => {
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div className="w-full lg:w-auto">
           <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Lista de Stock</h1>
-          <p className="text-sm text-gray-500 mt-1">Inventario de colectas.</p>
+          <p className="text-xs sm:text-sm text-gray-500 mt-1">Inventario de colectas.</p>
         </div>
-        <div className="flex flex-row w-full lg:w-auto gap-2">
-          <Button onClick={exportToPDF} variant="secondary" className="flex-1 sm:flex-none flex items-center justify-center gap-2 text-sm py-2">
-            <span className="hidden sm:inline">📄 Exportar PDF</span>
-            <span className="sm:hidden">📄 PDF</span>
+        <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
+          <Button onClick={exportToPDF} variant="secondary" className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4">
+            <span>📄 Exportar PDF</span>
           </Button>
-          <Button onClick={() => setModalOpen(true)} className="flex-[2] sm:flex-none text-sm py-2">
+          <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto text-xs sm:text-sm py-2 px-3 sm:px-4">
             <span className="hidden sm:inline">Registrar nueva colecta</span>
             <span className="sm:hidden">+ Nueva Colecta</span>
           </Button>
@@ -265,7 +270,7 @@ export const Home = () => {
             <div className="hidden md:block">
               <Lista
                 items={colectasFiltradas}
-                columns={["Termos", "Toro", "Raza", "Cant.", "Fecha", "Cliente", "Acciones"]}
+                columns={["Termos", "Toro", "Raza", "Cant.", "Fecha", "Color", "Cliente", "Acciones"]}
                 onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
                 getRowStyle={(c: Colecta) => {
                   const nombre = c.cliente?.razonSocial || "";
@@ -286,7 +291,7 @@ export const Home = () => {
                     {c.toro?.nombre ?? "-"}
                   </Link>,
                   <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
-                  <span className="font-semibold text-blue-600">{c.cantidad ?? 0}</span>,
+                  <span className="font-semibold text-blue-600">{c.inventario?.cantidadInicial ?? c.cantidad ?? 0}</span>,
                   <span className="text-gray-500 text-sm whitespace-nowrap">
                     {c.fecha ? (() => {
                       const parts = String(c.fecha).split('T')[0].split('-');
@@ -297,6 +302,17 @@ export const Home = () => {
                       return String(c.fecha);
                     })() : "-"}
                   </span>,
+                  <div className="flex justify-center">
+                    {c.color ? (
+                      <div
+                        className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+                        style={{ backgroundColor: c.color }}
+                        title={`Color: ${c.color}`}
+                      />
+                    ) : (
+                      <span className="text-gray-400">-</span>
+                    )}
+                  </div>,
                   <span
                     className="px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
                     style={{
@@ -341,7 +357,7 @@ export const Home = () => {
               {colectasFiltradas.map((c: Colecta) => (
                 <div
                   key={c.id}
-                  className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
+                  className="bg-white border border-gray-100 rounded-xl p-3 sm:p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
                   onClick={() => navigate(`/colectas/${c.id}`)}
                 >
                   {/* Indicador lateral de color cliente */}
@@ -356,7 +372,7 @@ export const Home = () => {
                       <div className="flex items-center gap-2 mb-0.5">
                         <Link
                           to={`/toros/${c.toro?.id}`}
-                          className="font-bold text-lg text-gray-900 truncate hover:text-blue-600 block"
+                          className="font-bold text-base sm:text-lg text-gray-900 truncate hover:text-blue-600 block"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {c.toro?.nombre ?? "-"}
@@ -377,10 +393,18 @@ export const Home = () => {
                       </div>
                     </div>
 
+                    <div className="flex flex-col items-center justify-center pointer-events-none">
+                      <div
+                        className="w-5 h-5 rounded-full border border-gray-200 shadow-sm mb-1"
+                        style={{ backgroundColor: c.color || 'transparent' }}
+                      />
+                      <div className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter">Color</div>
+                    </div>
+
                     <div className="flex flex-col items-end">
                       <div className="text-[10px] text-gray-400 uppercase font-black tracking-tighter mb-[-4px]">Dosis</div>
                       <div className="text-2xl font-black text-blue-600 tabular-nums">
-                        {c.cantidad ?? 0}
+                        {c.inventario?.cantidadInicial ?? c.cantidad ?? 0}
                       </div>
                     </div>
                   </div>

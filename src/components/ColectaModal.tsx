@@ -34,6 +34,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
     fecha: new Date().toLocaleDateString('sv-SE'),
     vigor: "",
     motilidad: "",
+    color: "",
   });
 
   const [contenedores, setContenedores] = useState<Contenedor[]>([
@@ -64,6 +65,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
         fecha: colectaToEdit.fecha ? new Date(colectaToEdit.fecha).toISOString().split('T')[0] : new Date().toLocaleDateString('sv-SE'),
         vigor: vigor || "",
         motilidad: motilidad || "",
+        color: colectaToEdit.color || "",
       });
 
       // Cargar contenedores desde la colecta
@@ -84,6 +86,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
         fecha: new Date().toLocaleDateString('sv-SE'),
         vigor: "",
         motilidad: "",
+        color: "",
       });
       setContenedores([{ termoId: "", canastilloCodigo: "", cantidad: "" }]);
     }
@@ -168,7 +171,8 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
           termoId: c.termoId,
           canastilloCodigo: c.canastilloCodigo,
           cantidad: parseInt(c.cantidad)
-        }))
+        })),
+        color: form.color
       };
 
       let response;
@@ -190,6 +194,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
         fecha: new Date().toLocaleDateString('sv-SE'),
         vigor: "",
         motilidad: "",
+        color: "",
       });
       setContenedores([{ termoId: "", canastilloCodigo: "", cantidad: "" }]);
       onClose();
@@ -310,6 +315,41 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
                   placeholder="Ej: 75"
                   required
                 />
+              </div>
+            </div>
+
+            {/* Selector de Color */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Color de Identificación</label>
+              <div className="flex flex-wrap gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+                {[
+                  { name: 'Sin Color', value: '' },
+                  { name: 'Blanco', value: '#ffffff' },
+                  { name: 'Azul', value: '#3b82f6' },
+                  { name: 'Verde', value: '#22c55e' },
+                  { name: 'Amarillo', value: '#eab308' },
+                ].map((color) => (
+                  <button
+                    key={color.value}
+                    type="button"
+                    onClick={() => setForm({ ...form, color: color.value })}
+                    className={`group relative flex flex-col items-center gap-1 transition-all ${form.color === color.value ? 'scale-110' : 'hover:scale-105 opacity-70 hover:opacity-100'
+                      }`}
+                  >
+                    <div
+                      className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all ${form.color === color.value ? 'border-blue-600 ring-2 ring-blue-100' : 'border-white'
+                        }`}
+                      style={{ backgroundColor: color.value || '#ffffff' }}
+                    >
+                      {!color.value && (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">/</div>
+                      )}
+                    </div>
+                    <span className={`text-[10px] font-bold ${form.color === color.value ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {color.name}
+                    </span>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

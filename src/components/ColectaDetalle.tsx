@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { api } from "../api/api";
 import type { Colecta } from "../Modelo/Colecta";
@@ -47,6 +47,12 @@ export const ColectaDetalle = () => {
     useEffect(() => {
         fetchColecta();
     }, [id]);
+
+    const colorName = useMemo(() => {
+        if (!colecta?.color) return "Sin color";
+        const colors: any = { '#ffffff': 'Blanco', '#3b82f6': 'Azul', '#22c55e': 'Verde', '#eab308': 'Amarillo' };
+        return colors[colecta.color] || "Personalizado";
+    }, [colecta?.color]);
 
     if (loading) {
         return (
@@ -140,12 +146,11 @@ export const ColectaDetalle = () => {
                         <FileText className="text-blue-600" size={24} />
                         Información General
                     </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">Fecha</label>
                             <p className="text-lg text-gray-900 font-medium">
                                 {colecta.fecha ? (() => {
-                                    // Formatear fecha localmente sin desfase UTC
                                     const dStr = String(colecta.fecha).split('T')[0];
                                     if (dStr.includes('-')) {
                                         const [y, m, d] = dStr.split('-');
@@ -157,7 +162,7 @@ export const ColectaDetalle = () => {
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">Cantidad</label>
-                            <p className="text-lg text-blue-600 font-bold">{colecta.cantidad}</p>
+                            <p className="text-lg text-blue-600 font-bold">{colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}</p>
                         </div>
                         <div>
                             <label className="text-xs font-semibold text-gray-500 uppercase">Vigor / Motilidad</label>
@@ -168,6 +173,16 @@ export const ColectaDetalle = () => {
                             <p className="text-lg text-green-600 font-bold">
                                 {colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
                             </p>
+                        </div>
+                        <div>
+                            <label className="text-xs font-semibold text-gray-500 uppercase">Color</label>
+                            <div className="flex items-center gap-2 mt-1">
+                                <div
+                                    className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
+                                    style={{ backgroundColor: colecta.color || 'transparent' }}
+                                />
+                                <span className="text-sm text-gray-600">{colorName}</span>
+                            </div>
                         </div>
                     </div>
                 </Card>
@@ -348,7 +363,6 @@ export const ColectaDetalle = () => {
                                         <td className="py-3 px-4 text-sm text-gray-600">
                                             {(() => {
                                                 if (!mov.fecha) return "-";
-                                                // Formatear hora localmente
                                                 return new Date(mov.fecha).toLocaleString('es-AR', {
                                                     day: '2-digit',
                                                     month: '2-digit',

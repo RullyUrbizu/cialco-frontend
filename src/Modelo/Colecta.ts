@@ -27,6 +27,7 @@ export interface Colecta {
   ingreso: number;
   sale: number;
   stock: number;
+  color?: string;
   contenedores?: ColectaContenedor[];
   inventario?: {
     id: string;
