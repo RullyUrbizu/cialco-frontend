@@ -33,7 +33,7 @@ export const App = () => {
           <Route path="/historial" element={<HistorialView />} />
         </Routes>
       </Layout>
-      <Toaster position="top-right" richColors closeButton autoClose={5000} />
+      <Toaster position="top-right" richColors closeButton duration={5000} />
     </Router>
   );
 };
