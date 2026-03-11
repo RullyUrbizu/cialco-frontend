@@ -11,6 +11,8 @@ import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 import { ConfirmModal } from "./ui/ConfirmModal";
+import * as XLSX from "xlsx";
+import { ExportMenu } from "./ui/ExportMenu";
 
 export const Home = () => {
   const { colectas, loading, error, deleteColecta, updateColecta } = useColectas();
@@ -135,7 +137,7 @@ export const Home = () => {
       c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
       c.toro?.nombre || "-",
       c.toro?.raza || "-",
-      c.cantidad?.toString() || "0",
+      (c.inventario?.cantidadInicial ?? c.cantidad ?? 0).toString(),
       c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
       c.cliente?.razonSocial || "-"
     ]);
@@ -208,6 +210,35 @@ export const Home = () => {
     doc.save(`cialco-reporte-stock-${timestamp}.pdf`);
   };
 
+  const exportToXLSX = () => {
+    const data = colectasFiltradas.map(c => ({
+      "Ubicación (Termo/Canast)": c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
+      "Toro": c.toro?.nombre || "-",
+      "Raza": c.toro?.raza || "-",
+      "Cantidad": c.inventario?.cantidadInicial ?? c.cantidad ?? 0,
+      "Fecha": c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
+      "Cliente": c.cliente?.razonSocial || "-"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Stock");
+
+    // Ajustar anchos de columna
+    const wscols = [
+      { wch: 30 }, // Ubicación
+      { wch: 20 }, // Toro
+      { wch: 15 }, // Raza
+      { wch: 10 }, // Cantidad
+      { wch: 15 }, // Fecha
+      { wch: 30 }, // Cliente
+    ];
+    ws['!cols'] = wscols;
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `cialco-reporte-stock-${timestamp}.xlsx`);
+  };
+
   if (loading) {
     return (
       <div className="space-y-6">
@@ -241,9 +272,11 @@ export const Home = () => {
           <p className="text-xs sm:text-sm text-gray-500 mt-1">Inventario de colectas.</p>
         </div>
         <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
-          <Button onClick={exportToPDF} variant="secondary" className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4">
-            <span>📄 Exportar PDF</span>
-          </Button>
+          <ExportMenu 
+            onExportPDF={exportToPDF} 
+            onExportXLSX={exportToXLSX} 
+            className="w-full sm:w-auto"
+          />
           <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto text-xs sm:text-sm py-2 px-3 sm:px-4">
             <span className="hidden sm:inline">Registrar nueva colecta</span>
             <span className="sm:hidden">+ Nueva Colecta</span>
