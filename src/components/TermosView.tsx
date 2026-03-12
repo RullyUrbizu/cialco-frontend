@@ -19,7 +19,7 @@ interface TermoOcupacion {
 }
 
 export const TermosView = () => {
-    const { colectas, loading: loadingColectas, error: errorColectas, refetch: refetchColectas } = useColectas();
+    const { colectas, loading: loadingColectas, error: errorColectas, refetch: refetchColectas } = useColectas(1000); // Fetch up to 1000 records for occupation
     const { termos, loading: loadingTermos, error: errorTermos, refetch: refetchTermos, toggleTermoActivo, deleteTermo } = useTermos();
     const [termosData, setTermosData] = useState<TermoOcupacion[]>([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
