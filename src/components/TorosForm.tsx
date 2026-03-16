@@ -82,10 +82,11 @@ export const ToroForm = () => {
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
               Nombre
             </label>
             <input
+              id="nombre"
               type="text"
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
@@ -96,10 +97,11 @@ export const ToroForm = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="raza" className="block text-sm font-medium text-gray-700 mb-1">
               Raza
             </label>
             <select
+              id="raza"
               value={raza}
               onChange={(e) => setRaza(e.target.value as RazaEnum)}
               className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
