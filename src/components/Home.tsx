@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useColectas } from "../hooks/useColectas";
 import { ColectaModal } from "../components/ColectaModal";
 import type { Colecta } from "../Modelo/Colecta";
@@ -11,15 +11,25 @@ import autoTable from "jspdf-autotable";
 import { toast } from "sonner";
 import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 import { ConfirmModal } from "./ui/ConfirmModal";
+import * as XLSX from "xlsx";
+import { ExportMenu } from "./ui/ExportMenu";
 
 export const Home = () => {
-  const { colectas, loading, error, deleteColecta, updateColecta } = useColectas();
+  const { 
+    colectas, 
+    loading, 
+    loadingMore, 
+    error, 
+    deleteColecta, 
+    updateColecta, 
+    loadMore, 
+    hasMore, 
+    searchTerm, 
+    setSearchTerm,
+    total: totalRecords
+  } = useColectas();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
-
-  // --- estados para filtrado ---
-  const [searchTerm, setSearchTerm] = useState("");
-  const [colectasFiltradas, setColectasFiltradas] = useState<Colecta[]>([]);
   const [colectaToEdit, setColectaToEdit] = useState<Colecta | undefined>();
 
   // --- estados para confirmación de borrado ---
@@ -27,37 +37,25 @@ export const Home = () => {
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // --- sincronizamos colectas originales con filtradas ---
+  // --- Infinite Scroll Observer ---
+  const observerTarget = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    setColectasFiltradas(colectas || []);
-  }, [colectas]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasMore && !loading && !loadingMore) {
+          loadMore();
+        }
+      },
+      { threshold: 1.0 }
+    );
 
-  // --- filtrado en frontend ---
-  useEffect(() => {
-    if (!colectas) return;
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
 
-    const term = searchTerm.toLowerCase();
-    const colectasSorted = [...colectas].sort((a, b) => {
-      const dateA = a.fecha ? new Date(a.fecha).getTime() : 0;
-      const dateB = b.fecha ? new Date(b.fecha).getTime() : 0;
-      return dateB - dateA;
-    });
-
-    const filtradas = colectasSorted.filter((c) => {
-      const matchCliente = c.cliente?.razonSocial?.toLowerCase().includes(term);
-      const matchToro = c.toro?.nombre?.toLowerCase().includes(term);
-      const matchRaza = c.toro?.raza?.toLowerCase().includes(term);
-
-      // Búsqueda en contenedores (termos y canastillos)
-      const matchContenedores = c.contenedores?.some(cont =>
-        cont.termo?.codigo?.toLowerCase().includes(term) ||
-        cont.canastillo?.codigo?.toString().toLowerCase().includes(term)
-      );
-
-      return matchCliente || matchToro || matchRaza || matchContenedores;
-    });
-    setColectasFiltradas(filtradas);
-  }, [searchTerm, colectas]);
+    return () => observer.disconnect();
+  }, [hasMore, loading, loadingMore, loadMore]);
 
 
 
@@ -131,11 +129,11 @@ export const Home = () => {
     }
 
     // --- TABLA DE DATOS ---
-    const tableData = colectasFiltradas.map(c => [
+    const tableData = colectas.map(c => [
       c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
       c.toro?.nombre || "-",
       c.toro?.raza || "-",
-      c.cantidad?.toString() || "0",
+      (c.inventario?.cantidadInicial ?? c.cantidad ?? 0).toString(),
       c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
       c.cliente?.razonSocial || "-"
     ]);
@@ -191,7 +189,7 @@ export const Home = () => {
 
     // Resumen Final
     const finalY = (doc as any).lastAutoTable.finalY || 100;
-    const totalDosis = colectasFiltradas.reduce((acc, c) => acc + (c.cantidad || 0), 0);
+    const totalDosis = colectas.reduce((acc: number, c: Colecta) => acc + (c.cantidad || 0), 0);
 
     if (finalY < 250) { // Evitar pisar el footer
       doc.setFont("helvetica", "bold");
@@ -200,7 +198,7 @@ export const Home = () => {
       doc.text(`Stock Total del Reporte: ${totalDosis} dosis`, 14, finalY + 15);
       doc.setFontSize(8);
       doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
-      doc.text(`Total de registros: ${colectasFiltradas.length} colectas`, 14, finalY + 20);
+      doc.text(`Total de registros: ${totalRecords} colectas`, 14, finalY + 20);
     }
 
     // Guardar PDF
@@ -208,7 +206,37 @@ export const Home = () => {
     doc.save(`cialco-reporte-stock-${timestamp}.pdf`);
   };
 
-  if (loading) {
+  const exportToXLSX = () => {
+    const data = colectas.map(c => ({
+      "Ubicación (Termo/Canast)": c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
+      "Toro": c.toro?.nombre || "-",
+      "Raza": c.toro?.raza || "-",
+      "Cantidad": c.inventario?.cantidadInicial ?? c.cantidad ?? 0,
+      "Fecha": c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
+      "Cliente": c.cliente?.razonSocial || "-"
+    }));
+
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Stock");
+
+    // Ajustar anchos de columna
+    const wscols = [
+      { wch: 30 }, // Ubicación
+      { wch: 20 }, // Toro
+      { wch: 15 }, // Raza
+      { wch: 10 }, // Cantidad
+      { wch: 15 }, // Fecha
+      { wch: 30 }, // Cliente
+    ];
+    ws['!cols'] = wscols;
+
+    const timestamp = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `cialco-reporte-stock-${timestamp}.xlsx`);
+  };
+
+  // Skeleton de carga inicial (solo cuando no hay datos cargados todavía)
+  if (loading && colectas.length === 0) {
     return (
       <div className="space-y-6">
         <div className="flex justify-between items-center">
@@ -237,13 +265,20 @@ export const Home = () => {
     <>
       <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
         <div className="w-full lg:w-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Lista de Stock</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
+            Lista de Stock 
+            <span className="ml-3 text-sm font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+              {totalRecords} totales
+            </span>
+          </h1>
           <p className="text-xs sm:text-sm text-gray-500 mt-1">Inventario de colectas.</p>
         </div>
         <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
-          <Button onClick={exportToPDF} variant="secondary" className="w-full sm:w-auto flex items-center justify-center gap-2 text-xs sm:text-sm py-2 px-3 sm:px-4">
-            <span>📄 Exportar PDF</span>
-          </Button>
+          <ExportMenu 
+            onExportPDF={exportToPDF} 
+            onExportXLSX={exportToXLSX} 
+            className="w-full sm:w-auto"
+          />
           <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto text-xs sm:text-sm py-2 px-3 sm:px-4">
             <span className="hidden sm:inline">Registrar nueva colecta</span>
             <span className="sm:hidden">+ Nueva Colecta</span>
@@ -258,18 +293,24 @@ export const Home = () => {
             placeholder="Buscar por toro, cliente, termo o canastillo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg pl-4 pr-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-lg"
+            className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-lg"
           />
+          {/* Spinner sutil durante búsqueda sin cortar la vista */}
+          {loading && colectas.length > 0 && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+            </div>
+          )}
         </div>
       </Card>
 
       <Card className="overflow-hidden p-0">
-        {colectasFiltradas.length > 0 ? (
+        {colectas.length > 0 ? (
           <>
             {/* Vista de tabla para desktop */}
             <div className="hidden md:block">
               <Lista
-                items={colectasFiltradas}
+                items={colectas}
                 columns={["Termos", "Toro", "Raza", "Cant.", "Fecha", "Color", "Cliente", "Acciones"]}
                 onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
                 getRowStyle={(c: Colecta) => {
@@ -354,7 +395,7 @@ export const Home = () => {
 
             {/* Vista de tarjetas para móvil */}
             <div className="md:hidden p-3 space-y-4 bg-gray-50/50">
-              {colectasFiltradas.map((c: Colecta) => (
+              {colectas.map((c: Colecta) => (
                 <div
                   key={c.id}
                   className="bg-white border border-gray-100 rounded-xl p-3 sm:p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
@@ -472,6 +513,21 @@ export const Home = () => {
                 </div>
               ))}
             </div>
+
+            {/* Elemento para observar el scroll */}
+            <div ref={observerTarget} className="h-10 flex items-center justify-center p-4">
+              {loadingMore && (
+                <div className="flex items-center gap-2 text-blue-600 font-medium animate-pulse">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                  <span className="text-xs uppercase tracking-widest ml-1">Cargando más...</span>
+                </div>
+              )}
+              {!hasMore && colectas.length > 0 && (
+                <span className="text-gray-400 text-xs uppercase tracking-widest">Fin de la lista</span>
+              )}
+            </div>
           </>
         ) : (
           <div className="p-12 text-center text-gray-500">
@@ -489,7 +545,8 @@ export const Home = () => {
         colectaToEdit={colectaToEdit}
         onCreated={(nuevaColecta) => {
           colectas.unshift(nuevaColecta);
-          setColectasFiltradas([nuevaColecta, ...colectasFiltradas]);
+          // Nota: lo ideal sería un refetch o insertar si cumple los filtros
+          // Por simplicidad insertamos al inicio
         }}
         onUpdated={(colectaActualizada) => {
           updateColecta(colectaActualizada);

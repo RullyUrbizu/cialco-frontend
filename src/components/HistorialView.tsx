@@ -1,13 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
 import { api } from "../api/api";
 import { Card } from "./ui/Card";
-import { Button } from "./ui/Button";
-import { Calendar, User, FileText, Search, ArrowUpCircle, ArrowDownCircle, Download } from "lucide-react";
+import { Calendar, User, FileText, Search, ArrowUpCircle, ArrowDownCircle } from "lucide-react";
 import { ToroIcon } from "./ui/ToroIcon";
 import { TableSkeleton } from "./ui/Skeleton";
 import type { Movimiento } from "../Modelo/Movimiento";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { ExportMenu } from "./ui/ExportMenu";
 
 export const HistorialView = () => {
     const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
@@ -97,6 +98,35 @@ export const HistorialView = () => {
         doc.save(`historial-movimientos-${new Date().toISOString().split('T')[0]}.pdf`);
     };
 
+    const exportToXLSX = () => {
+        const data = historialFiltrado.map(m => ({
+            "Fecha": new Date(m.fecha).toLocaleDateString('es-AR'),
+            "Tipo": m.tipo.toUpperCase(),
+            "Toro": m.inventario?.colecta?.toro?.nombre || "-",
+            "Cantidad": m.cantidad || 0,
+            "Cliente": m.cliente?.razonSocial || m.inventario?.colecta?.cliente?.razonSocial || "-",
+            "Remito": m.remito || "-"
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Historial");
+
+        // Ajustar anchos de columna
+        const wscols = [
+            { wch: 15 }, // Fecha
+            { wch: 10 }, // Tipo
+            { wch: 20 }, // Toro
+            { wch: 10 }, // Cantidad
+            { wch: 30 }, // Cliente
+            { wch: 15 }, // Remito
+        ];
+        ws['!cols'] = wscols;
+
+        const timestamp = new Date().toISOString().split('T')[0];
+        XLSX.writeFile(wb, `historial-movimientos-${timestamp}.xlsx`);
+    };
+
     if (loading) return <div className="p-6"><TableSkeleton rows={10} /></div>;
 
     return (
@@ -106,10 +136,11 @@ export const HistorialView = () => {
                     <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Historial de Movimientos</h1>
                     <p className="text-gray-500 mt-1">Auditoría completa de ingresos y salidas de stock.</p>
                 </div>
-                <Button onClick={exportToPDF} variant="secondary" className="flex items-center gap-2 w-full lg:w-auto justify-center">
-                    <Download size={18} />
-                    Exportar PDF
-                </Button>
+                <ExportMenu 
+                    onExportPDF={exportToPDF} 
+                    onExportXLSX={exportToXLSX} 
+                    className="w-full lg:w-auto"
+                />
             </div>
 
             {/* Filtros */}
