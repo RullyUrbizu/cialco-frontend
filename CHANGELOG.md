@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/RullyUrbizu/cialco-frontend/compare/v1.0.0...v1.1.0) (2026-03-30)
+
+
+### Features
+
+* improve mobile view and UI for ColectaDetalle movements history ([6b4e262](https://github.com/RullyUrbizu/cialco-frontend/commit/6b4e2627f1fd81a9d3b4290ed19f1635420ef28f))
+
 ## 1.0.0 (2026-03-16)
 
 
