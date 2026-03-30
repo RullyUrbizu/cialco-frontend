@@ -97,21 +97,21 @@ export const ColectaDetalle = () => {
         <div className="max-w-4xl mx-auto p-4 md:p-0">
             {/* Botón volver */}
             <div className="mb-4">
-                <Button variant="ghost" onClick={() => navigate("/")}>
+                <Button variant="ghost" onClick={() => navigate("/")} className="-ml-2">
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     <span className="hidden sm:inline">Volver al Stock</span>
-                    <span className="sm:hidden">Volver</span>
+                    <span className="sm:hidden text-sm">Volver al Stock</span>
                 </Button>
             </div>
 
             {/* Header: Título y botón editar */}
             <div className="mb-3 flex items-center justify-between gap-3">
-                <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
+                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
 
                 <Button
                     onClick={() => setEditModalOpen(true)}
                     variant="ghost"
-                    className="text-gray-500 hover:text-blue-600 flex-shrink-0"
+                    className="text-gray-500 hover:text-blue-600 flex-shrink-0 h-9 px-3"
                 >
                     <Edit className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Editar</span>
@@ -123,7 +123,7 @@ export const ColectaDetalle = () => {
                 <Button
                     onClick={() => setIngresoModalOpen(true)}
                     variant="secondary"
-                    className="flex-1"
+                    className="flex-1 h-11"
                 >
                     <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
                     Ingreso
@@ -131,7 +131,7 @@ export const ColectaDetalle = () => {
                 <Button
                     onClick={() => setModalOpen(true)}
                     variant="primary"
-                    className="flex-1"
+                    className="flex-1 h-11"
                     disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
                 >
                     <TrendingDown className="mr-2 h-4 w-4" />
@@ -141,15 +141,15 @@ export const ColectaDetalle = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Datos Principales */}
-                <Card className="p-6 md:col-span-2">
-                    <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+                <Card className="p-4 sm:p-6 md:col-span-2">
+                    <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
                         <FileText className="text-blue-600" size={24} />
                         Información General
                     </h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Fecha</label>
-                            <p className="text-lg text-gray-900 font-medium">
+                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Fecha</label>
+                            <p className="text-base sm:text-lg text-gray-900 font-medium">
                                 {colecta.fecha ? (() => {
                                     const dStr = String(colecta.fecha).split('T')[0];
                                     if (dStr.includes('-')) {
@@ -161,105 +161,105 @@ export const ColectaDetalle = () => {
                             </p>
                         </div>
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Cantidad</label>
-                            <p className="text-lg text-blue-600 font-bold">{colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}</p>
+                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Cantidad</label>
+                            <p className="text-base sm:text-lg text-blue-600 font-bold">{colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}</p>
                         </div>
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Vigor / Motilidad</label>
-                            <p className="text-lg text-gray-900">{colecta.vigorMot || "-"}</p>
+                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Vigor / Motilidad</label>
+                            <p className="text-base sm:text-lg text-gray-900">{colecta.vigorMot || "-"}</p>
                         </div>
                         <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Stock Actual</label>
-                            <p className="text-lg text-green-600 font-bold">
+                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Stock Actual</label>
+                            <p className="text-base sm:text-lg text-green-600 font-bold">
                                 {colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
                             </p>
                         </div>
-                        <div>
-                            <label className="text-xs font-semibold text-gray-500 uppercase">Color</label>
-                            <div className="flex items-center gap-2 mt-1">
+                        <div className="col-span-2 lg:col-span-1">
+                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Color</label>
+                            <div className="flex items-center gap-2 mt-0.5">
                                 <div
-                                    className="w-5 h-5 rounded-full border border-gray-200 shadow-sm"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-200 shadow-sm"
                                     style={{ backgroundColor: colecta.color || 'transparent' }}
                                 />
-                                <span className="text-sm text-gray-600">{colorName}</span>
+                                <span className="text-xs sm:text-sm text-gray-600">{colorName}</span>
                             </div>
                         </div>
                     </div>
                 </Card>
 
                 {/* Datos del Toro */}
-                <Card className="p-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="bg-orange-100 p-1 rounded-md">🐂</span>
+                <Card className="p-4 sm:p-6">
+                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="bg-orange-100 p-1.5 rounded-md text-sm sm:text-base">🐂</span>
                         Datos del Toro
                     </h2>
                     <div className="space-y-3">
                         <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
-                            <span className="text-gray-600">Nombre</span>
+                            <span className="text-sm text-gray-600">Nombre</span>
                             <Link to={`/toros/${colecta.toro?.id}`} className="group flex items-center gap-1 hover:text-blue-600 transition-colors">
-                                <span className="font-medium text-gray-900 group-hover:text-blue-600">{colecta.toro?.nombre}</span>
+                                <span className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600">{colecta.toro?.nombre}</span>
                                 <ExternalLink size={14} className="text-gray-300 group-hover:text-blue-500" />
                             </Link>
                         </div>
                         <div className="flex justify-between border-b border-gray-100 pb-2">
-                            <span className="text-gray-600">Raza</span>
-                            <span className="font-medium text-gray-900">{colecta.toro?.raza}</span>
+                            <span className="text-sm text-gray-600">Raza</span>
+                            <span className="text-sm sm:text-base font-medium text-gray-900">{colecta.toro?.raza}</span>
                         </div>
                     </div>
                 </Card>
 
                 {/* Datos del Cliente */}
-                <Card className="p-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="bg-green-100 p-1 rounded-md">👤</span>
+                <Card className="p-4 sm:p-6">
+                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+                        <span className="bg-green-100 p-1.5 rounded-md text-sm sm:text-base">👤</span>
                         Datos del Cliente
                     </h2>
                     <div className="space-y-3">
                         <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
-                            <span className="text-gray-600">Razón Social</span>
+                            <span className="text-sm text-gray-600">Razón Social</span>
                             <Link to={`/clientes/${colecta.cliente?.id}`} className="group flex items-center gap-1 hover:text-green-600 transition-colors">
-                                <span className="font-medium text-gray-900 group-hover:text-green-600">{colecta.cliente?.razonSocial}</span>
+                                <span className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-green-600">{colecta.cliente?.razonSocial}</span>
                                 <ExternalLink size={14} className="text-gray-300 group-hover:text-green-500" />
                             </Link>
                         </div>
                         <div className="flex justify-between border-b border-gray-100 pb-2">
-                            <span className="text-gray-600">CUIT</span>
-                            <span className="font-mono text-gray-900">{colecta.cliente?.cuit || colecta.cuit || "-"}</span>
+                            <span className="text-sm text-gray-600">CUIT</span>
+                            <span className="text-sm sm:text-base font-mono text-gray-900">{colecta.cliente?.cuit || colecta.cuit || "-"}</span>
                         </div>
                     </div>
                 </Card>
 
                 {/* Ubicación (Contenedores) */}
-                <Card className="p-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Card className="p-4 sm:p-6">
+                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
                         <Layers className="text-purple-600" size={20} />
                         Contenedores ({colecta.contenedores?.length || 0})
                     </h2>
                     {colecta.contenedores && colecta.contenedores.length > 0 ? (
-                        <div className="space-y-3">
+                        <div className="space-y-4">
                             {colecta.contenedores.map((contenedor, index) => (
-                                <div key={contenedor.id || index} className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-sm">
+                                <div key={contenedor.id || index} className="bg-gray-50/50 p-3 sm:p-4 rounded-xl border border-gray-200">
+                                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase block mb-1">Termo</label>
+                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Termo</label>
                                             <span className="font-mono font-semibold text-gray-800">
                                                 {contenedor.termo?.codigo || "-"}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase block mb-1">Canastillo</label>
+                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Canastillo</label>
                                             <span className="font-mono font-semibold text-gray-800">
                                                 {contenedor.canastillo?.codigo || "-"}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase block mb-1">Stock Actual</label>
+                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Stock Actual</label>
                                             <span className={`font-bold ${(contenedor.stockActual ?? 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
                                                 {contenedor.stockActual ?? 0}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-xs text-gray-500 uppercase block mb-1">Inicial</label>
+                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Inicial</label>
                                             <span className="font-semibold text-gray-600">
                                                 {contenedor.cantidad || 0}
                                             </span>
@@ -271,7 +271,7 @@ export const ColectaDetalle = () => {
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="text-blue-600 hover:bg-blue-50 py-1"
+                                                className="text-blue-600 hover:bg-blue-50 py-1 h-8"
                                                 onClick={() => setTransferModal({
                                                     isOpen: true,
                                                     origen: {
@@ -282,8 +282,8 @@ export const ColectaDetalle = () => {
                                                     }
                                                 })}
                                             >
-                                                <MoveHorizontal className="mr-2 h-4 w-4" />
-                                                Mover
+                                                <MoveHorizontal className="mr-2 h-3.5 w-3.5" />
+                                                <span className="text-xs">Mover</span>
                                             </Button>
                                         </div>
                                     )}
@@ -291,40 +291,40 @@ export const ColectaDetalle = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-4 text-gray-500 text-sm">
+                        <div className="text-center py-4 text-gray-500 text-sm italic">
                             No hay contenedores registrados
                         </div>
                     )}
                 </Card>
 
                 {/* Movimientos Resumen */}
-                <Card className="p-6">
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Card className="p-4 sm:p-6">
+                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
                         <Hash className="text-gray-600" size={20} />
                         Resumen de Pajuelas
                     </h2>
-                    <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Ingreso Inicial</span>
-                            <span className="font-medium text-gray-900 bg-gray-100 px-2 py-1 rounded">
+                    <div className="space-y-4">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
+                            <span className="text-sm text-gray-600">Ingreso Inicial</span>
+                            <span className="text-sm font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
                                 {colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Ingresos Adicionales</span>
-                            <span className="font-medium text-gray-900 bg-green-50 text-green-700 px-2 py-1 rounded">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
+                            <span className="text-sm text-gray-600">Ingresos Adicionales</span>
+                            <span className="text-sm font-medium text-gray-900 bg-green-50 text-green-700 px-2 py-0.5 rounded">
                                 {colecta.inventario?.ingresosTotal ?? 0}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center">
-                            <span className="text-gray-600">Salidas</span>
-                            <span className="font-medium text-gray-900 bg-red-50 text-red-700 px-2 py-1 rounded">
+                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
+                            <span className="text-sm text-gray-600">Salidas</span>
+                            <span className="text-sm font-medium text-gray-900 bg-red-50 text-red-700 px-2 py-0.5 rounded">
                                 {colecta.inventario?.salidasTotal ?? 0}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center pt-2 border-t border-gray-100 mt-2">
-                            <span className="text-gray-800 font-semibold">Stock Actual</span>
-                            <span className="font-bold text-blue-600 text-lg">
+                        <div className="flex justify-between items-center pt-2">
+                            <span className="text-gray-800 font-semibold text-sm">Stock Actual</span>
+                            <span className="font-bold text-blue-600 text-xl">
                                 {colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
                             </span>
                         </div>
@@ -333,68 +333,111 @@ export const ColectaDetalle = () => {
             </div>
 
             {/* Historial de Movimientos */}
-            <Card className="p-6 mt-6">
+            <Card className="p-4 sm:p-6 mt-6">
                 <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                     <History className="text-gray-600" size={20} />
                     Historial de Movimientos
                 </h2>
 
                 {loadingMovimientos ? (
-                    <div className="text-center py-4 text-gray-500">Cargando movimientos...</div>
+                    <div className="text-center py-8 text-gray-500 flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                        <span className="text-sm">Cargando movimientos...</span>
+                    </div>
                 ) : movimientos.length === 0 ? (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-10 text-gray-500 border-2 border-dashed border-gray-100 rounded-2xl">
                         No hay movimientos registrados para esta colecta
                     </div>
                 ) : (
-                    <div className="overflow-x-auto">
-                        <table className="w-full">
-                            <thead>
-                                <tr className="border-b border-gray-200 bg-gray-50">
-                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
-                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
-                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Remito</th>
-                                    <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
-                                    <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Notas</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {movimientos.map((mov) => (
-                                    <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                                        <td className="py-3 px-4 text-sm text-gray-600">
-                                            {(() => {
-                                                if (!mov.fecha) return "-";
-                                                return new Date(mov.fecha).toLocaleString('es-AR', {
-                                                    day: '2-digit',
-                                                    month: '2-digit',
-                                                    year: 'numeric',
-                                                    hour: '2-digit',
-                                                    minute: '2-digit',
-                                                    hour12: false
-                                                });
-                                            })()}
-                                        </td>
-                                        <td className="py-3 px-4">
-                                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mov.tipo === 'ingreso'
-                                                ? 'bg-green-100 text-green-800'
-                                                : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                {mov.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Salida'}
-                                            </span>
-                                        </td>
-                                        <td className="py-3 px-4 text-sm font-mono text-gray-700">
-                                            {mov.remito || '-'}
-                                        </td>
-                                        <td className={`py-3 px-4 text-sm font-semibold text-right ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
-                                            }`}>
-                                            {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
-                                        </td>
-                                        <td className="py-3 px-4 text-sm text-gray-500 max-w-xs truncate" title={mov.notas || ''}>
-                                            {mov.notas || '-'}
-                                        </td>
+                    <div className="space-y-4">
+                        {/* Vista de Tabla para Desktop */}
+                        <div className="hidden md:block overflow-x-auto">
+                            <table className="w-full">
+                                <thead>
+                                    <tr className="border-b border-gray-200 bg-gray-50/50">
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Remito</th>
+                                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
+                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Notas</th>
                                     </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody>
+                                    {movimientos.map((mov) => (
+                                        <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50/80 transition-colors">
+                                            <td className="py-3 px-4 text-sm text-gray-600">
+                                                {(() => {
+                                                    if (!mov.fecha) return "-";
+                                                    return new Date(mov.fecha).toLocaleString('es-AR', {
+                                                        day: '2-digit',
+                                                        month: '2-digit',
+                                                        year: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit',
+                                                        hour12: false
+                                                    });
+                                                })()}
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mov.tipo === 'ingreso'
+                                                    ? 'bg-green-100 text-green-800'
+                                                    : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                    {mov.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Salida'}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4 text-sm font-mono text-gray-700">
+                                                {mov.remito || '-'}
+                                            </td>
+                                            <td className={`py-3 px-4 text-sm font-semibold text-right ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                                                }`}>
+                                                {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
+                                            </td>
+                                            <td className="py-3 px-4 text-sm text-gray-500 max-w-xs truncate" title={mov.notas || ''}>
+                                                {mov.notas || '-'}
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Vista de Cards para Mobile */}
+                        <div className="md:hidden space-y-3">
+                            {movimientos.map((mov) => (
+                                <div key={mov.id} className="p-3 bg-white border border-gray-100 rounded-xl shadow-sm space-y-2">
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-gray-500 uppercase font-bold">Fecha</span>
+                                            <span className="text-xs font-semibold text-gray-800">
+                                                {mov.fecha ? new Date(mov.fecha).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
+                                            </span>
+                                        </div>
+                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${mov.tipo === 'ingreso' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                            {mov.tipo === 'ingreso' ? 'INGRESO' : 'SALIDA'}
+                                        </span>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
+                                        <div>
+                                            <span className="text-[10px] text-gray-500 uppercase block">Remito</span>
+                                            <span className="text-xs font-mono text-gray-700">{mov.remito || '-'}</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-[10px] text-gray-500 uppercase block">Cantidad</span>
+                                            <span className={`text-base font-bold ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                                                {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {mov.notas && (
+                                        <div className="pt-2 border-t border-gray-50">
+                                            <span className="text-[10px] text-gray-500 uppercase block">Notas</span>
+                                            <p className="text-xs text-gray-600 leading-relaxed italic">"{mov.notas}"</p>
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 )}
             </Card>
