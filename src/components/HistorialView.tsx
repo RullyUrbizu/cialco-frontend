@@ -91,7 +91,7 @@ export const HistorialView = () => {
             head: [["Fecha", "Tipo", "Toro", "Cant.", "Cliente", "Remito"]],
             body: tableData,
             theme: 'grid',
-            headStyles: { fillColor: [59, 130, 246] },
+            headStyles: { fillColor: [31, 74, 54] },
             styles: { fontSize: 8 }
         });
 
@@ -131,10 +131,11 @@ export const HistorialView = () => {
 
     return (
         <div className="p-4 md:p-8 space-y-6 max-w-7xl mx-auto">
-            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 relative z-10">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Historial de Movimientos</h1>
-                    <p className="text-gray-500 mt-1">Auditoría completa de ingresos y salidas de stock.</p>
+                    <p className="eyebrow mb-2">Cialco · Auditoría</p>
+                    <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink tracking-tight">Historial de Movimientos</h1>
+                    <p className="text-ink-muted mt-1.5">Auditoría completa de ingresos y salidas de stock.</p>
                 </div>
                 <ExportMenu 
                     onExportPDF={exportToPDF} 
@@ -147,25 +148,25 @@ export const HistorialView = () => {
             <Card className="p-4 md:p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="relative">
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Búsqueda</label>
+                        <label className="block text-[11px] font-semibold text-ink-faint uppercase tracking-wider mb-2">Búsqueda</label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-ink-faint" size={18} />
                             <input
                                 type="text"
                                 placeholder="Toro, cliente o remito..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                                className="field pl-10"
                             />
                         </div>
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Tipo</label>
+                        <label className="block text-[11px] font-semibold text-ink-faint uppercase tracking-wider mb-2">Tipo</label>
                         <select
                             value={filterTipo}
                             onChange={(e) => setFilterTipo(e.target.value as any)}
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                            className="field"
                         >
                             <option value="todos">Todos los tipos</option>
                             <option value="ingreso">Ingresos</option>
@@ -174,22 +175,22 @@ export const HistorialView = () => {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Desde</label>
+                        <label className="block text-[11px] font-semibold text-ink-faint uppercase tracking-wider mb-2">Desde</label>
                         <input
                             type="date"
                             value={fechaDesde}
                             onChange={(e) => setFechaDesde(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="field"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-xs font-bold text-gray-400 uppercase mb-1">Hasta</label>
+                        <label className="block text-[11px] font-semibold text-ink-faint uppercase tracking-wider mb-2">Hasta</label>
                         <input
                             type="date"
                             value={fechaHasta}
                             onChange={(e) => setFechaHasta(e.target.value)}
-                            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                            className="field"
                         />
                     </div>
                 </div>
@@ -198,57 +199,57 @@ export const HistorialView = () => {
             {/* Lista de Movimientos */}
             <div className="space-y-4">
                 {/* Desktop Table View */}
-                <Card className="hidden md:block overflow-hidden border-none shadow-lg">
+                <Card className="hidden md:block overflow-hidden border-hairline shadow-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 border-b border-gray-100">
+                            <thead className="bg-ivory-100 border-b border-hairline">
                                 <tr>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Fecha</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Tipo</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Toro</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Cant.</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Cliente</th>
-                                    <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Remito</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest">Fecha</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest">Tipo</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest">Toro</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest text-right">Cant.</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest">Cliente</th>
+                                    <th className="px-6 py-4 text-xs font-semibold text-ink-faint uppercase tracking-widest">Remito</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-hairline">
                                 {historialFiltrado.length > 0 ? (
                                     historialFiltrado.map((m) => (
-                                        <tr key={m.id} className="hover:bg-gray-50/50 transition-colors group">
+                                        <tr key={m.id} className="hover:bg-ivory-100/60 transition-colors group">
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3 text-sm text-gray-600 font-medium">
-                                                    <Calendar size={16} className="text-gray-400" />
+                                                <div className="flex items-center gap-3 text-sm text-ink-muted font-medium">
+                                                    <Calendar size={16} className="text-ink-faint" />
                                                     {new Date(m.fecha).toLocaleDateString('es-AR')}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${m.tipo === 'ingreso'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : 'bg-red-100 text-red-700'
+                                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${m.tipo === 'ingreso'
+                                                    ? 'bg-moss-light text-pine border border-moss/20'
+                                                    : 'bg-terracotta-light text-terracotta border border-terracotta/20'
                                                     }`}>
                                                     {m.tipo === 'ingreso' ? <ArrowUpCircle size={14} /> : <ArrowDownCircle size={14} />}
                                                     {m.tipo}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-3 font-semibold text-gray-900">
-                                                    <ToroIcon size={18} className="text-blue-500" />
+                                                <div className="flex items-center gap-3 font-semibold text-ink">
+                                                    <ToroIcon size={18} className="text-cialco" />
                                                     {m.inventario?.colecta?.toro?.nombre || "N/A"}
                                                 </div>
                                             </td>
-                                            <td className={`px-6 py-4 text-right font-black text-lg ${m.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                                            <td className={`px-6 py-4 text-right font-serif font-semibold text-lg tabular ${m.tipo === 'ingreso' ? 'text-pine' : 'text-terracotta'
                                                 }`}>
                                                 {m.cantidad}
                                             </td>
                                             <td className="px-6 py-4">
-                                                <div className="flex items-center gap-2 text-sm text-gray-700">
-                                                    <User size={16} className="text-gray-400" />
+                                                <div className="flex items-center gap-2 text-sm text-ink-muted">
+                                                    <User size={16} className="text-ink-faint" />
                                                     {m.cliente?.razonSocial || m.inventario?.colecta?.cliente?.razonSocial || "-"}
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 {m.remito ? (
-                                                    <div className="flex items-center gap-2 text-sm font-mono text-blue-600 bg-blue-50 px-2 py-1 rounded w-fit">
+                                                    <div className="flex items-center gap-2 text-sm font-mono text-cialco bg-cialco-light px-2 py-1 rounded w-fit">
                                                         <FileText size={14} />
                                                         {m.remito}
                                                     </div>
@@ -258,7 +259,7 @@ export const HistorialView = () => {
                                     ))
                                 ) : (
                                     <tr>
-                                        <td colSpan={6} className="px-6 py-12 text-center text-gray-500 italic">
+                                        <td colSpan={6} className="px-6 py-12 text-center text-ink-faint italic">
                                             No se encontraron movimientos con los filtros aplicados.
                                         </td>
                                     </tr>
@@ -272,44 +273,44 @@ export const HistorialView = () => {
                 <div className="md:hidden space-y-4">
                     {historialFiltrado.length > 0 ? (
                         historialFiltrado.map((m) => (
-                            <Card key={m.id} className="p-4 border-none shadow-md space-y-3">
+                            <Card key={m.id} className="p-4 border-hairline shadow-sm space-y-3">
                                 <div className="flex justify-between items-start">
                                     <div className="flex flex-col gap-1">
-                                        <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
+                                        <div className="flex items-center gap-2 text-sm text-ink-muted font-medium">
                                             <Calendar size={14} />
                                             {new Date(m.fecha).toLocaleDateString('es-AR')}
                                         </div>
-                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider w-fit ${m.tipo === 'ingreso'
-                                            ? 'bg-green-100 text-green-700'
-                                            : 'bg-red-100 text-red-700'
+                                        <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider w-fit ${m.tipo === 'ingreso'
+                                            ? 'bg-moss-light text-pine border border-moss/20'
+                                            : 'bg-terracotta-light text-terracotta border border-terracotta/20'
                                             }`}>
                                             {m.tipo === 'ingreso' ? <ArrowUpCircle size={12} /> : <ArrowDownCircle size={12} />}
                                             {m.tipo}
                                         </span>
                                     </div>
-                                    <div className={`text-2xl font-black ${m.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
-                                        {m.cantidad}
+                                    <div className={`font-serif text-2xl font-semibold tabular ${m.tipo === 'ingreso' ? 'text-pine' : 'text-terracotta'}`}>
+                                        {m.tipo === 'ingreso' ? '+' : '-'}{m.cantidad}
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <div className="flex items-center gap-2 font-bold text-gray-900 border-b border-gray-100 pb-2">
-                                        <ToroIcon size={18} className="text-blue-500" />
+                                    <div className="flex items-center gap-2 font-semibold text-ink border-b border-hairline pb-2">
+                                        <ToroIcon size={18} className="text-cialco" />
                                         {m.inventario?.colecta?.toro?.nombre || "N/A"}
                                     </div>
                                     
                                     <div className="grid grid-cols-2 gap-2 text-sm">
                                         <div className="flex flex-col gap-1">
-                                            <span className="text-[10px] font-bold text-gray-400 uppercase">Cliente</span>
-                                            <div className="flex items-center gap-1 text-gray-700">
-                                                <User size={14} className="text-gray-400 shrink-0" />
+                                            <span className="text-[10px] font-semibold text-ink-faint uppercase">Cliente</span>
+                                            <div className="flex items-center gap-1 text-ink-muted">
+                                                <User size={14} className="text-ink-faint shrink-0" />
                                                 <span className="truncate">{m.cliente?.razonSocial || m.inventario?.colecta?.cliente?.razonSocial || "-"}</span>
                                             </div>
                                         </div>
                                         {m.remito && (
                                             <div className="flex flex-col gap-1">
-                                                <span className="text-[10px] font-bold text-gray-400 uppercase">Remito</span>
-                                                <div className="flex items-center gap-1 text-blue-600 font-mono text-xs">
+                                                <span className="text-[10px] font-semibold text-ink-faint uppercase">Remito</span>
+                                                <div className="flex items-center gap-1 text-cialco font-mono text-xs">
                                                     <FileText size={14} />
                                                     {m.remito}
                                                 </div>
@@ -320,9 +321,9 @@ export const HistorialView = () => {
                             </Card>
                         ))
                     ) : (
-                        <div className="bg-white p-8 rounded-xl text-center text-gray-500 italic shadow-sm border border-gray-100">
+                        <Card className="p-8 rounded-xl text-center text-ink-faint italic border-hairline">
                             No se encontraron movimientos.
-                        </div>
+                        </Card>
                     )}
                 </div>
             </div>

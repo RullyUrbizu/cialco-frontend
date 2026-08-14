@@ -13,18 +13,19 @@ import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 import { ConfirmModal } from "./ui/ConfirmModal";
 import * as XLSX from "xlsx";
 import { ExportMenu } from "./ui/ExportMenu";
+import { Search, PackageOpen, Plus } from "lucide-react";
 
 export const Home = () => {
-  const { 
-    colectas, 
-    loading, 
-    loadingMore, 
-    error, 
-    deleteColecta, 
-    updateColecta, 
-    loadMore, 
-    hasMore, 
-    searchTerm, 
+  const {
+    colectas,
+    loading,
+    loadingMore,
+    error,
+    deleteColecta,
+    updateColecta,
+    loadMore,
+    hasMore,
+    searchTerm,
     setSearchTerm,
     total: totalRecords
   } = useColectas();
@@ -256,55 +257,57 @@ export const Home = () => {
 
   if (error) return (
     <div className="max-w-4xl mx-auto p-8 text-center space-y-4">
-      <div className="text-red-600 font-medium bg-red-50 p-6 rounded-lg border border-red-100">{error}</div>
-      {/* Note: Colectas hook handles error state, but we provide a clean message */}
+      <div className="text-terracotta font-medium bg-terracotta-light p-6 rounded-xl border border-terracotta/20">{error}</div>
     </div>
   );
 
   return (
     <>
-      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6">
+      <div className="flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4 mb-8 animate-fade-up relative z-10">
         <div className="w-full lg:w-auto">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">
-            Lista de Stock 
-            <span className="ml-3 text-sm font-normal text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
+          <p className="eyebrow mb-2">Cialco · Inventario de Stock</p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink tracking-tight">
+            Lista de Stock
+            <span className="ml-3 align-middle text-xs font-semibold text-brass-dark bg-brass-50 border border-brass/20 px-2.5 py-1 rounded-full">
               {totalRecords} totales
             </span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-500 mt-1">Inventario de colectas.</p>
+          <p className="text-sm text-ink-muted mt-1.5">Inventario de colectas de genética.</p>
         </div>
         <div className="flex flex-col sm:flex-row w-full lg:w-auto gap-2">
-          <ExportMenu 
-            onExportPDF={exportToPDF} 
-            onExportXLSX={exportToXLSX} 
+          <ExportMenu
+            onExportPDF={exportToPDF}
+            onExportXLSX={exportToXLSX}
             className="w-full sm:w-auto"
           />
           <Button onClick={() => setModalOpen(true)} className="w-full sm:w-auto text-xs sm:text-sm py-2 px-3 sm:px-4">
+            <Plus size={16} className="mr-1.5" />
             <span className="hidden sm:inline">Registrar nueva colecta</span>
             <span className="sm:hidden">+ Nueva Colecta</span>
           </Button>
         </div>
       </div>
 
-      <Card className="mb-8 p-4">
+      <Card className="mb-8 p-2 animate-fade-up" padding="p-2">
         <div className="relative">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input
             type="text"
             placeholder="Buscar por toro, cliente, termo o canastillo..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-300 rounded-lg pl-4 pr-10 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-lg"
+            className="w-full border-0 bg-transparent rounded-xl pl-11 pr-10 py-3.5 focus:ring-0 focus:outline-none text-[15px] placeholder:text-ink-faint/80"
           />
           {/* Spinner sutil durante búsqueda sin cortar la vista */}
           {loading && colectas.length > 0 && (
             <div className="absolute right-3 top-1/2 -translate-y-1/2">
-              <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <div className="w-5 h-5 border-2 border-brass border-t-transparent rounded-full animate-spin" />
             </div>
           )}
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 shadow-soft animate-fade-up" padding="p-0">
         {colectas.length > 0 ? (
           <>
             {/* Vista de tabla para desktop */}
@@ -315,25 +318,25 @@ export const Home = () => {
                 onRowClick={(c: Colecta) => navigate(`/colectas/${c.id}`)}
                 getRowStyle={(c: Colecta) => {
                   const nombre = c.cliente?.razonSocial || "";
-                  if (!nombre) return { backgroundColor: '#f9fafb' };
+                  if (!nombre) return {};
                   const hue = stringToHue(nombre);
-                  return { backgroundColor: `hsl(${hue}, 45%, 95%)` };
+                  return { backgroundColor: `hsl(${hue}, 40%, 96%)` };
                 }}
                 renderCells={(c: Colecta) => [
-                  <div className="flex flex-col gap-1 min-w-[120px]">
+                  <div key="termos" className="flex flex-col gap-1 min-w-[120px]">
                     {c.contenedores?.map((cont, idx) => (
-                      <div key={idx} className="font-mono text-gray-600 text-[10px] bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100 flex justify-between">
-                        <span className="font-bold">{cont.termo?.codigo ?? "-"}</span>
-                        <span className="text-gray-400">({cont.canastillo?.codigo ?? "-"})</span>
+                      <div key={idx} className="font-mono text-[10px] text-ink-soft bg-ivory-100 border border-hairline px-1.5 py-0.5 rounded-md flex justify-between gap-2">
+                        <span className="font-semibold text-ink">{cont.termo?.codigo ?? "-"}</span>
+                        <span className="text-ink-faint">({cont.canastillo?.codigo ?? "-"})</span>
                       </div>
                     )) || "-"}
                   </div>,
-                  <Link to={`/toros/${c.toro?.id}`} className="font-medium text-blue-600 hover:underline" onClick={(e) => e.stopPropagation()}>
+                  <Link key="toro" to={`/toros/${c.toro?.id}`} className="font-semibold text-cialco hover:underline" onClick={(e) => e.stopPropagation()}>
                     {c.toro?.nombre ?? "-"}
                   </Link>,
-                  <span className="text-gray-600">{c.toro?.raza ?? "-"}</span>,
-                  <span className="font-semibold text-blue-600">{c.inventario?.cantidadInicial ?? c.cantidad ?? 0}</span>,
-                  <span className="text-gray-500 text-sm whitespace-nowrap">
+                  <span key="raza" className="text-ink-muted">{c.toro?.raza ?? "-"}</span>,
+                  <span key="cant" className="font-semibold text-cialco tabular">{c.inventario?.cantidadInicial ?? c.cantidad ?? 0}</span>,
+                  <span key="fecha" className="text-ink-muted text-sm whitespace-nowrap tabular">
                     {c.fecha ? (() => {
                       const parts = String(c.fecha).split('T')[0].split('-');
                       if (parts.length === 3) {
@@ -343,27 +346,28 @@ export const Home = () => {
                       return String(c.fecha);
                     })() : "-"}
                   </span>,
-                  <div className="flex justify-center">
+                  <div key="color" className="flex justify-center">
                     {c.color ? (
                       <div
-                        className="w-4 h-4 rounded-full border border-gray-200 shadow-sm"
+                        className="w-4 h-4 rounded-full border border-ink/10 shadow-sm"
                         style={{ backgroundColor: c.color }}
                         title={`Color: ${c.color}`}
                       />
                     ) : (
-                      <span className="text-gray-400">-</span>
+                      <span className="text-ink-faint">-</span>
                     )}
                   </div>,
                   <span
-                    className="px-2 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
+                    key="cliente"
+                    className="px-2.5 py-1 rounded-md text-xs font-semibold whitespace-nowrap"
                     style={{
-                      backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 90%)` : '#f3f4f6',
-                      color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 30%)` : '#1f2937'
+                      backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 55%, 92%)` : '#F6F1E8',
+                      color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 28%)` : '#6E7C72'
                     }}
                   >
                     {c.cliente?.razonSocial ?? "-"}
                   </span>,
-                  <div className="flex gap-2 whitespace-nowrap">
+                  <div key="acciones" className="flex gap-2 whitespace-nowrap">
                     <Link to={`/colectas/${c.id}`}>
                       <Button size="sm" variant="info">Ver</Button>
                     </Link>
@@ -394,17 +398,17 @@ export const Home = () => {
             </div>
 
             {/* Vista de tarjetas para móvil */}
-            <div className="md:hidden p-3 space-y-4 bg-gray-50/50">
+            <div className="md:hidden p-4 space-y-4">
               {colectas.map((c: Colecta) => (
                 <div
                   key={c.id}
-                  className="bg-white border border-gray-100 rounded-xl p-3 sm:p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
+                  className="bg-paper border border-hairline rounded-xl p-4 shadow-soft active:scale-[0.98] transition-all relative overflow-hidden"
                   onClick={() => navigate(`/colectas/${c.id}`)}
                 >
                   {/* Indicador lateral de color cliente */}
                   <div
                     className="absolute left-0 top-0 bottom-0 w-1.5"
-                    style={{ backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 60%)` : '#d1d5db' }}
+                    style={{ backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 55%, 55%)` : '#D8CCB8' }}
                   />
 
                   {/* Header: Toro y Cantidad */}
@@ -413,16 +417,16 @@ export const Home = () => {
                       <div className="flex items-center gap-2 mb-0.5">
                         <Link
                           to={`/toros/${c.toro?.id}`}
-                          className="font-bold text-base sm:text-lg text-gray-900 truncate hover:text-blue-600 block"
+                          className="font-serif font-semibold text-lg text-ink truncate hover:text-cialco block"
                           onClick={(e) => e.stopPropagation()}
                         >
                           {c.toro?.nombre ?? "-"}
                         </Link>
-                        <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold rounded uppercase tracking-wider">
+                        <span className="px-1.5 py-0.5 bg-brass-50 text-brass-dark text-[10px] font-bold rounded uppercase tracking-wider">
                           {c.toro?.raza ?? "-"}
                         </span>
                       </div>
-                      <div className="text-[11px] text-gray-400 font-medium">
+                      <div className="text-[11px] text-ink-faint font-medium">
                         📅 {c.fecha ? (() => {
                           const parts = String(c.fecha).split('T')[0].split('-');
                           if (parts.length === 3) {
@@ -436,15 +440,15 @@ export const Home = () => {
 
                     <div className="flex flex-col items-center justify-center pointer-events-none">
                       <div
-                        className="w-5 h-5 rounded-full border border-gray-200 shadow-sm mb-1"
+                        className="w-5 h-5 rounded-full border border-ink/10 shadow-sm mb-1"
                         style={{ backgroundColor: c.color || 'transparent' }}
                       />
-                      <div className="text-[8px] text-gray-400 font-bold uppercase tracking-tighter">Color</div>
+                      <div className="text-[8px] text-ink-faint font-bold uppercase tracking-tighter">Color</div>
                     </div>
 
                     <div className="flex flex-col items-end">
-                      <div className="text-[10px] text-gray-400 uppercase font-black tracking-tighter mb-[-4px]">Dosis</div>
-                      <div className="text-2xl font-black text-blue-600 tabular-nums">
+                      <div className="text-[10px] text-ink-faint uppercase font-semibold tracking-widest mb-[-4px]">Dosis</div>
+                      <div className="font-serif text-2xl font-semibold text-cialco tabular">
                         {c.inventario?.cantidadInicial ?? c.cantidad ?? 0}
                       </div>
                     </div>
@@ -452,18 +456,18 @@ export const Home = () => {
 
                   {/* Detalles con diseño de etiquetas */}
                   <div className="flex flex-wrap gap-2 mb-5">
-                    <div className="flex items-center gap-1.5 bg-gray-50 px-2 py-1 rounded-md border border-gray-100">
-                      <span className="text-gray-400 text-[10px]">📍</span>
-                      <span className="font-mono text-[11px] font-bold text-gray-600">
+                    <div className="flex items-center gap-1.5 bg-ivory-100 px-2 py-1 rounded-md border border-hairline">
+                      <span className="text-ink-faint text-[10px]">📍</span>
+                      <span className="font-mono text-[11px] font-semibold text-ink-soft">
                         {c.contenedores?.map(cont => cont.termo?.codigo ?? "-").filter((v, i, a) => a.indexOf(v) === i).join('-') || "-"}
                       </span>
                     </div>
                     <div
                       className="flex items-center gap-1.5 px-2 py-1 rounded-md border"
                       style={{
-                        backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 97%)` : '#f9fafb',
-                        borderColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 90%)` : '#f3f4f6',
-                        color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 70%, 35%)` : '#4b5563'
+                        backgroundColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 96%)` : '#F6F1E8',
+                        borderColor: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 45%, 88%)` : '#E9E1D2',
+                        color: c.cliente?.razonSocial ? `hsl(${stringToHue(c.cliente.razonSocial)}, 60%, 30%)` : '#6E7C72'
                       }}
                     >
                       <span className="text-[10px]">👤</span>
@@ -474,7 +478,7 @@ export const Home = () => {
                   </div>
 
                   {/* Acciones compactas */}
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-50">
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-hairline/70">
                     <Button
                       size="sm"
                       variant="info"
@@ -517,21 +521,22 @@ export const Home = () => {
             {/* Elemento para observar el scroll */}
             <div ref={observerTarget} className="h-10 flex items-center justify-center p-4">
               {loadingMore && (
-                <div className="flex items-center gap-2 text-blue-600 font-medium animate-pulse">
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                <div className="flex items-center gap-2 text-pine font-medium animate-pulse">
+                  <div className="w-2 h-2 bg-pine rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                  <div className="w-2 h-2 bg-pine rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                  <div className="w-2 h-2 bg-pine rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                   <span className="text-xs uppercase tracking-widest ml-1">Cargando más...</span>
                 </div>
               )}
               {!hasMore && colectas.length > 0 && (
-                <span className="text-gray-400 text-xs uppercase tracking-widest">Fin de la lista</span>
+                <span className="text-ink-faint text-xs uppercase tracking-widest">Fin de la lista</span>
               )}
             </div>
           </>
         ) : (
-          <div className="p-12 text-center text-gray-500">
-            No se encontraron colectas con los filtros aplicados.
+          <div className="p-14 text-center text-ink-faint">
+            <PackageOpen size={40} className="mx-auto mb-3 text-sand" />
+            <p className="font-medium text-ink-soft">No se encontraron colectas con los filtros aplicados.</p>
           </div>
         )}
       </Card>

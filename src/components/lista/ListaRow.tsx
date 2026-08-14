@@ -6,7 +6,7 @@ interface ListaRowProps<T> {
 }
 
 export const ListaRow = <T,>({ item, renderCells }: ListaRowProps<T>) => {
-  return <tr className="hover:bg-gray-50 transition-colors">{renderCells(item).map((cell, i) => (
+  return <tr className="hover:bg-ivory-100/70 transition-colors">{renderCells(item).map((cell, i) => (
     <ListaItem key={i}>{cell}</ListaItem>
   ))}</tr>;
 };

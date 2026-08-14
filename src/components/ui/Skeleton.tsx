@@ -5,13 +5,13 @@ interface SkeletonProps {
 export const Skeleton = ({ className = "" }: SkeletonProps) => {
     return (
         <div
-            className={`animate-pulse bg-gray-200 rounded-md ${className}`}
+            className={`animate-pulse bg-sand/40 rounded-md ${className}`}
         />
     );
 };
 
 export const CardSkeleton = () => (
-    <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm space-y-4">
+    <div className="bg-paper p-6 rounded-xl2 border border-hairline shadow-soft space-y-4">
         <Skeleton className="h-6 w-1/3" />
         <div className="space-y-2">
             <Skeleton className="h-4 w-full" />

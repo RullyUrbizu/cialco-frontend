@@ -75,24 +75,27 @@ export const ClienteForm = () => {
         }
     };
 
-    if (initialLoading) return <div className="p-8 text-center text-gray-500">Cargando datos del cliente...</div>;
+    if (initialLoading) return <div className="p-8 text-center text-ink-faint">Cargando datos del cliente...</div>;
 
     return (
-        <div className="max-w-2xl mx-auto">
+        <div className="max-w-2xl mx-auto animate-fade-up">
             <div className="mb-6 flex items-center gap-4">
                 <Button variant="ghost" onClick={() => navigate("/Clientes")}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Volver
                 </Button>
-                <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-                    {isEditing ? "Editar Cliente" : "Nuevo Cliente"}
-                </h1>
+                <div>
+                    <p className="eyebrow mb-1">Cialco · Clientes</p>
+                    <h1 className="font-serif text-3xl font-semibold text-ink tracking-tight">
+                        {isEditing ? "Editar Cliente" : "Nuevo Cliente"}
+                    </h1>
+                </div>
             </div>
 
             <Card className="p-6">
                 <form onSubmit={handleSubmit} className="flex flex-col gap-6">
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="field-label">
                             Razón Social
                         </label>
                         <input
@@ -100,20 +103,20 @@ export const ClienteForm = () => {
                             value={razonSocial}
                             onChange={(e) => setRazonSocial(e.target.value)}
                             required
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            className="field"
                             placeholder="Ej: Estancia La Paz"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="field-label">
                             CUIT
                         </label>
                         <input
                             type="text"
                             value={cuit}
                             onChange={(e) => setCuit(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            className="field"
                             placeholder="Ej: 30-12345678-9"
                         />
                     </div>
