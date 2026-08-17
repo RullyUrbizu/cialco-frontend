@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Sidebar } from '../Sidebar';
+import { AiChat } from '../ai/AiChat';
 
 interface LayoutProps {
     children: ReactNode;
@@ -14,6 +15,7 @@ export const Layout = ({ children }: LayoutProps) => {
                     {children}
                 </div>
             </main>
+            <AiChat />
         </div>
     );
 };
