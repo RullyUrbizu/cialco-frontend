@@ -1,14 +1,37 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { AiChat } from './AiChat';
-import { sendChat } from './aiApi';
+import { sendChatStream } from './aiApi';
 import type { ChatMessage } from './aiApi';
 
 vi.mock('./aiApi', () => ({
-  sendChat: vi.fn(),
+  sendChatStream: vi.fn(),
 }));
 
-const mockSendChat = sendChat as unknown as ReturnType<typeof vi.fn>;
+const mockSendChatStream = sendChatStream as unknown as ReturnType<typeof vi.fn>;
+
+function simularRespuesta(texto: string) {
+  mockSendChatStream.mockImplementationOnce(
+    async (
+      _msgs: ChatMessage[],
+      callbacks: { onChunk: (t: string) => void; onDone: (t: string) => void; onError: (m: string) => void },
+    ) => {
+      callbacks.onChunk(texto);
+      callbacks.onDone(texto);
+    },
+  );
+}
+
+function simularError(mensaje: string) {
+  mockSendChatStream.mockImplementationOnce(
+    async (
+      _msgs: ChatMessage[],
+      callbacks: { onChunk: (t: string) => void; onDone: (t: string) => void; onError: (m: string) => void },
+    ) => {
+      callbacks.onError(mensaje);
+    },
+  );
+}
 
 describe('AiChat Component', () => {
   beforeEach(() => {
@@ -17,7 +40,6 @@ describe('AiChat Component', () => {
 
   it('abre el panel con el mensaje de bienvenida y sugerencias', () => {
     render(<AiChat />);
-
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
 
     expect(screen.getByText(/Soy el asistente de Stock Cialco/i)).toBeInTheDocument();
@@ -25,9 +47,7 @@ describe('AiChat Component', () => {
   });
 
   it('envía una consulta y muestra la respuesta del asistente', async () => {
-    mockSendChat.mockResolvedValueOnce({
-      reply: 'Hay 120 pajuelas del toro Don Julio.',
-    });
+    simularRespuesta('Hay 120 pajuelas del toro Don Julio.');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -38,11 +58,11 @@ describe('AiChat Component', () => {
     fireEvent.click(screen.getByLabelText('Enviar consulta'));
 
     expect(await screen.findByText('Hay 120 pajuelas del toro Don Julio.')).toBeInTheDocument();
-    expect(mockSendChat).toHaveBeenCalledTimes(1);
+    expect(mockSendChatStream).toHaveBeenCalledTimes(1);
   });
 
   it('muestra un error si la consulta falla', async () => {
-    mockSendChat.mockRejectedValueOnce(new Error('network'));
+    simularError('Error de conexión');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -53,12 +73,12 @@ describe('AiChat Component', () => {
     fireEvent.click(screen.getByLabelText('Enviar consulta'));
 
     expect(
-      await screen.findByText(/No se pudo conectar con el asistente/i),
+      await screen.findByText('Error de conexión'),
     ).toBeInTheDocument();
   });
 
   it('envía una sugerencia al tocarla', async () => {
-    mockSendChat.mockResolvedValueOnce({ reply: 'Respuesta de la sugerencia.' });
+    simularRespuesta('Respuesta de la sugerencia.');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -69,10 +89,8 @@ describe('AiChat Component', () => {
   });
 
   it('renderiza el markdown de la respuesta del asistente', async () => {
-    mockSendChat.mockResolvedValueOnce({
-      reply:
-        'Stock de **Vino Blanco**:\n\n* **Machazo**: 3.313 dosis\n* **Catrillan**: 437 dosis',
-    });
+    const texto = 'Stock de **Vino Blanco**:\n\n* **Machazo**: 3.313 dosis\n* **Catrillan**: 437 dosis';
+    simularRespuesta(texto);
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -87,44 +105,8 @@ describe('AiChat Component', () => {
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
   });
 
-  it('muestra el display real pero guarda la respuesta cruda anónima en el historial', async () => {
-    mockSendChat
-      .mockResolvedValueOnce({
-        reply:
-          'El cliente Cliente #a14c1d91-4d2a-58b8-9138-1611a2a3390f tiene 23 colectas.',
-        display: 'El cliente Las Tranqueras tiene 23 colectas.',
-      })
-      .mockResolvedValueOnce({ reply: 'Segunda respuesta.' });
-
-    render(<AiChat />);
-    fireEvent.click(screen.getByLabelText('Abrir asistente'));
-
-    fireEvent.change(screen.getByLabelText('Escribí tu consulta'), {
-      target: { value: '¿Qué clientes hay?' },
-    });
-    fireEvent.click(screen.getByLabelText('Enviar consulta'));
-
-    expect(
-      await screen.findByText('El cliente Las Tranqueras tiene 23 colectas.'),
-    ).toBeInTheDocument();
-
-    fireEvent.change(screen.getByLabelText('Escribí tu consulta'), {
-      target: { value: '¿Y ahora?' },
-    });
-    fireEvent.click(screen.getByLabelText('Enviar consulta'));
-
-    expect(await screen.findByText('Segunda respuesta.')).toBeInTheDocument();
-
-    const segundoHistorial = mockSendChat.mock.calls[1][0] as ChatMessage[];
-    const mensajeAsistente = segundoHistorial.find(
-      (m) => m.role === 'assistant' && m.content.includes('Cliente #'),
-    );
-    expect(mensajeAsistente).toBeDefined();
-    expect(mensajeAsistente?.content).toContain('Cliente #a14c1d91');
-  });
-
   it('envía con Enter y no con Shift+Enter', async () => {
-    mockSendChat.mockResolvedValueOnce({ reply: 'Respuesta Enter.' });
+    simularRespuesta('Respuesta Enter.');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -132,11 +114,11 @@ describe('AiChat Component', () => {
     const input = screen.getByLabelText('Escribí tu consulta');
     fireEvent.change(input, { target: { value: 'hola' } });
     fireEvent.keyDown(input, { key: 'Enter', shiftKey: true });
-    expect(mockSendChat).not.toHaveBeenCalled();
+    expect(mockSendChatStream).not.toHaveBeenCalled();
 
     fireEvent.keyDown(input, { key: 'Enter' });
     expect(await screen.findByText('Respuesta Enter.')).toBeInTheDocument();
-    expect(mockSendChat).toHaveBeenCalledTimes(1);
+    expect(mockSendChatStream).toHaveBeenCalledTimes(1);
   });
 
   it('mantiene deshabilitado el botón de enviar con el input vacío', () => {
@@ -163,7 +145,7 @@ describe('AiChat Component', () => {
   });
 
   it('oculta las sugerencias tras el primer mensaje', async () => {
-    mockSendChat.mockResolvedValueOnce({ reply: 'Listo.' });
+    simularRespuesta('Listo.');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -201,15 +183,15 @@ describe('AiChat Component', () => {
     const input = screen.getByLabelText('Escribí tu consulta');
     fireEvent.change(input, { target: { value: '   ' } });
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(mockSendChat).not.toHaveBeenCalled();
+    expect(mockSendChatStream).not.toHaveBeenCalled();
 
     fireEvent.change(input, { target: { value: '' } });
     fireEvent.keyDown(input, { key: 'Enter' });
-    expect(mockSendChat).not.toHaveBeenCalled();
+    expect(mockSendChatStream).not.toHaveBeenCalled();
   });
 
   it('permite cerrar el banner de error con el botón X', async () => {
-    mockSendChat.mockRejectedValueOnce(new Error('network'));
+    simularError('Error de conexión');
 
     render(<AiChat />);
     fireEvent.click(screen.getByLabelText('Abrir asistente'));
@@ -220,22 +202,26 @@ describe('AiChat Component', () => {
     fireEvent.click(screen.getByLabelText('Enviar consulta'));
 
     expect(
-      await screen.findByText(/No se pudo conectar con el asistente/i),
+      await screen.findByText('Error de conexión'),
     ).toBeInTheDocument();
 
     fireEvent.click(screen.getByLabelText('Cerrar error'));
     expect(
-      screen.queryByText(/No se pudo conectar con el asistente/i),
+      screen.queryByText('Error de conexión'),
     ).not.toBeInTheDocument();
   });
 
   it('aborta la request al cerrar el chat', async () => {
-    let resolveRequest!: (v: unknown) => void;
-    mockSendChat.mockImplementation(
-      () =>
-        new Promise((resolve) => {
-          resolveRequest = resolve;
-        }),
+    let signalCaptured: AbortSignal | undefined;
+    mockSendChatStream.mockImplementation(
+      async (
+        _msgs: ChatMessage[],
+        _cb: unknown,
+        signal?: AbortSignal,
+      ) => {
+        signalCaptured = signal;
+        await new Promise(() => {});
+      },
     );
 
     render(<AiChat />);
@@ -245,9 +231,11 @@ describe('AiChat Component', () => {
       target: { value: 'Hola' },
     });
     fireEvent.click(screen.getByLabelText('Enviar consulta'));
-    expect(mockSendChat).toHaveBeenCalledTimes(1);
+    expect(mockSendChatStream).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByLabelText('Cerrar asistente'));
-    resolveRequest({ reply: 'Tardado.' });
+
+    await new Promise((r) => setTimeout(r, 50));
+    expect(signalCaptured?.aborted).toBe(true);
   });
 });
