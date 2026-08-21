@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { Sparkles, Send, X, MessageCircle } from "lucide-react";
 import { Button } from "../ui/Button";
-import { sendChat } from "./aiApi";
+import { sendChatStream } from "./aiApi";
 import { Markdown } from "./Markdown";
 import type { ChatMessage } from "./aiApi";
 
@@ -80,16 +80,53 @@ export const AiChat = () => {
       setIsLoading(true);
       setError(null);
 
+      let textoAcumulado = "";
+
       try {
-        const res = await sendChat(historial, controller.signal);
-        setMessages((prev) => [
-          ...prev,
+        await sendChatStream(
+          historial,
           {
-            role: "assistant",
-            content: res.reply,
-            displayContent: res.display ?? res.reply,
+            onChunk: (chunk) => {
+              textoAcumulado += chunk;
+              setMessages((prev) => {
+                const actualizados = [...prev];
+                const ultimo = actualizados[actualizados.length - 1];
+                if (ultimo?.role === "assistant") {
+                  actualizados[actualizados.length - 1] = {
+                    ...ultimo,
+                    content: textoAcumulado,
+                    displayContent: textoAcumulado,
+                  };
+                } else {
+                  actualizados.push({
+                    role: "assistant",
+                    content: textoAcumulado,
+                    displayContent: textoAcumulado,
+                  });
+                }
+                return actualizados;
+              });
+            },
+            onDone: (fullText) => {
+              setMessages((prev) => {
+                const actualizados = [...prev];
+                const ultimo = actualizados[actualizados.length - 1];
+                if (ultimo?.role === "assistant") {
+                  actualizados[actualizados.length - 1] = {
+                    ...ultimo,
+                    content: fullText,
+                    displayContent: fullText,
+                  };
+                }
+                return actualizados;
+              });
+            },
+            onError: (mensaje) => {
+              setError(mensaje);
+            },
           },
-        ]);
+          controller.signal,
+        );
       } catch (err: unknown) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         const detalle =
