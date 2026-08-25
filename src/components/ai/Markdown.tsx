@@ -4,6 +4,8 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
 
+const SAFE_HREF_RE = /^(https?|mailto):/i;
+
 const componentes: Components = {
   p: ({ children }: { children?: ReactNode }) => (
     <p className="mb-2 text-[13px] leading-relaxed text-ink last:mb-0">
@@ -99,16 +101,24 @@ const componentes: Components = {
       {children}
     </td>
   ),
-  a: ({ children, href }: { children?: ReactNode; href?: string }) => (
-    <a
-      href={href}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="text-cialco-600 underline underline-offset-2 hover:text-cialco-500"
-    >
-      {children}
-    </a>
-  ),
+  a: ({ children, href }: { children?: ReactNode; href?: string }) => {
+    const safeHref = href && SAFE_HREF_RE.test(href) ? href : undefined;
+    if (!safeHref) {
+      return (
+        <span className="text-ink underline underline-offset-2">{children}</span>
+      );
+    }
+    return (
+      <a
+        href={safeHref}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-cialco-600 underline underline-offset-2 hover:text-cialco-500"
+      >
+        {children}
+      </a>
+    );
+  },
   hr: () => <hr className="my-3 border-hairline" />,
 };
 

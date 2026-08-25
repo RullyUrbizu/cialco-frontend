@@ -47,4 +47,36 @@ Código: \`X\` en línea`}
     expect(code?.className).not.toContain('bg-ivory-200');
     expect(code?.className).toContain('language-js');
   });
+
+  it('bloquea javascript: y data: URIs en links', () => {
+    const { container } = render(
+      <Markdown>[click](javascript:alert(1))</Markdown>,
+    );
+
+    const span = container.querySelector('span');
+    expect(span).not.toBeNull();
+    expect(span?.textContent).toBe('click');
+
+    const link = container.querySelector('a');
+    expect(link).toBeNull();
+  });
+
+  it('bloquea data: URIs y renderiza como texto plano', () => {
+    const { container } = render(
+      <Markdown>{'[payload](data:text/html,evil)'}</Markdown>,
+    );
+
+    const link = container.querySelector('a');
+    expect(link).toBeNull();
+  });
+
+  it('permite links http y https', () => {
+    render(<Markdown>[Google](https://google.com)</Markdown>);
+
+    const link = screen.getByText('Google').closest('a');
+    expect(link).not.toBeNull();
+    expect(link).toHaveAttribute('href', 'https://google.com');
+    expect(link).toHaveAttribute('target', '_blank');
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
+  });
 });

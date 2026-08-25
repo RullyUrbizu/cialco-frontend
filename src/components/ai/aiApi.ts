@@ -18,23 +18,6 @@ const getBaseUrl = (): string => {
   return `http://${window.location.hostname}:3000`;
 };
 
-const isTransientError = (err: unknown): boolean => {
-  if (err instanceof DOMException && err.name === "AbortError") return false;
-  if (
-    err &&
-    typeof err === "object" &&
-    "response" in err
-  ) {
-    const status = (err as { response?: { status?: number } }).response?.status;
-    if (status === 429 || status === 503) return true;
-  }
-  if (err instanceof TypeError) return true;
-  return false;
-};
-
-const wait = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
-
 export const sendChat = async (
   messages: ChatMessage[],
   signal?: AbortSignal,
@@ -42,19 +25,11 @@ export const sendChat = async (
   const payload = {
     messages: messages.map(({ role, content }) => ({ role, content })),
   };
-  const config = { timeout: 90000, signal };
-
-  try {
-    const { data } = await api.post<ChatResponse>("/ai/chat", payload, config);
-    return data;
-  } catch (err: unknown) {
-    if (signal?.aborted) throw err;
-    if (!isTransientError(err)) throw err;
-
-    await wait(2000);
-    const { data } = await api.post<ChatResponse>("/ai/chat", payload, config);
-    return data;
-  }
+  const { data } = await api.post<ChatResponse>("/ai/chat", payload, {
+    timeout: 90000,
+    signal,
+  });
+  return data;
 };
 
 export interface StreamCallbacks {
@@ -80,12 +55,11 @@ export const sendChatStream = async (
   });
 
   if (!res.ok) {
-    const texto = await res.text();
-    callbacks.onError(
-      res.status === 429
-        ? "Se agotó el límite del asistente."
-        : `Error del servidor (${res.status}): ${texto}`,
-    );
+    if (res.status === 429) {
+      callbacks.onError("Se agotó el límite del asistente.");
+    } else {
+      callbacks.onError("No se pudo conectar con el asistente.");
+    }
     return;
   }
 
@@ -135,6 +109,34 @@ export const sendChatStream = async (
           }
         } catch {
           // chunk incompleto
+        }
+      }
+    }
+
+    if (buffer.startsWith("data: ")) {
+      const jsonStr = buffer.slice(6).trim();
+      if (jsonStr === "[DONE]") {
+        callbacks.onDone(textoCompleto);
+        return;
+      }
+      if (jsonStr) {
+        try {
+          const evento = JSON.parse(jsonStr) as {
+            type: string;
+            text?: string;
+            message?: string;
+          };
+          if (evento.type === "text" && evento.text) {
+            textoCompleto += evento.text;
+            callbacks.onChunk(evento.text);
+          } else if (evento.type === "error") {
+            callbacks.onError(
+              evento.message || "Error desconocido del asistente.",
+            );
+            return;
+          }
+        } catch {
+          // chunk incompleto final
         }
       }
     }
