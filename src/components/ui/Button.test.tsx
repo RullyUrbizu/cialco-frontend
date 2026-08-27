@@ -30,7 +30,7 @@ describe('Button', () => {
   it('applies correct variant classes', () => {
     render(<Button variant="danger">Delete</Button>);
     const button = screen.getByRole('button');
-    expect(button.className).toContain('bg-red-600');
+    expect(button.className).toContain('bg-terracotta');
   });
 
   it('applies correct size classes', () => {

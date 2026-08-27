@@ -62,29 +62,29 @@ export const TransferenciaModal = ({ isOpen, onClose, onSuccess, origen }: Trans
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 shadow-2xl backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in duration-200">
-                <div className="bg-blue-600 p-6 text-white flex items-center justify-between">
+        <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-paper rounded-2xl border border-hairline w-full max-w-md overflow-hidden animate-scale-in">
+                <div className="bg-pine-dark p-6 text-paper flex items-center justify-between grain">
                     <div className="flex items-center gap-3">
-                        <MoveHorizontal className="h-6 w-6" />
-                        <h2 className="text-xl font-bold">Mover Stock</h2>
+                        <MoveHorizontal className="h-6 w-6 text-brass-light" />
+                        <h2 className="font-serif text-xl font-semibold">Mover Stock</h2>
                     </div>
-                    <button onClick={onClose} className="text-white/80 hover:text-white text-2xl">&times;</button>
+                    <button onClick={onClose} className="text-paper/70 hover:text-paper text-2xl">&times;</button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
-                    <div className="bg-blue-50 p-4 rounded-xl border border-blue-100 flex flex-col gap-1">
-                        <label className="text-xs font-bold text-blue-600 uppercase tracking-wider">Origen</label>
-                        <p className="text-sm text-blue-900 font-medium">
-                            Termo <span className="font-mono font-bold">{origen.termo}</span> /
-                            Canastillo <span className="font-mono font-bold">{origen.canastillo}</span>
+                    <div className="bg-brass-50 p-4 rounded-xl border border-brass/20 flex flex-col gap-1">
+                        <label className="text-xs font-semibold text-brass-dark uppercase tracking-wider">Origen</label>
+                        <p className="text-sm text-ink font-medium">
+                            Termo <span className="font-mono font-semibold">{origen.termo}</span> /
+                            Canastillo <span className="font-mono font-semibold">{origen.canastillo}</span>
                         </p>
-                        <p className="text-xs text-blue-700">Disponible: <span className="font-bold">{origen.stockActual}</span> pajuelas</p>
+                        <p className="text-xs text-brass-dark">Disponible: <span className="font-semibold">{origen.stockActual}</span> pajuelas</p>
                     </div>
 
                     <div className="space-y-4">
                         <div>
-                            <label className="block text-sm font-semibold text-gray-700 mb-1">
+                            <label className="field-label">
                                 Cantidad a mover
                             </label>
                             <input
@@ -93,20 +93,20 @@ export const TransferenciaModal = ({ isOpen, onClose, onSuccess, origen }: Trans
                                 max={origen.stockActual}
                                 value={cantidad}
                                 onChange={(e) => setCantidad(parseInt(e.target.value))}
-                                className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none font-medium"
+                                className="field font-medium"
                                 required
                             />
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                <label className="field-label">
                                     Termo Destino
                                 </label>
                                 <select
                                     value={termoDestinoId}
                                     onChange={(e) => setTermoDestinoId(e.target.value)}
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none"
+                                    className="field"
                                     required
                                 >
                                     <option value="">Seleccione...</option>
@@ -116,7 +116,7 @@ export const TransferenciaModal = ({ isOpen, onClose, onSuccess, origen }: Trans
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-semibold text-gray-700 mb-1">
+                                <label className="field-label">
                                     Canastillo Destino
                                 </label>
                                 <input
@@ -124,7 +124,7 @@ export const TransferenciaModal = ({ isOpen, onClose, onSuccess, origen }: Trans
                                     value={canastilloCodigo}
                                     onChange={(e) => setCanastilloCodigo(e.target.value)}
                                     placeholder="Ej: C1"
-                                    className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 transition-all outline-none font-mono"
+                                    className="field font-mono"
                                     required
                                 />
                             </div>

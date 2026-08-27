@@ -6,7 +6,7 @@ import { useClientes } from "../hooks/useClientes";
 import type { Cliente } from "../Modelo/Cliente";
 import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
-import { UserPlus } from "lucide-react";
+import { UserPlus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Skeleton, CardSkeleton, TableSkeleton } from "./ui/Skeleton";
 import { ConfirmModal } from "./ui/ConfirmModal";
@@ -112,17 +112,18 @@ export const Clientes = () => {
   }
 
   if (error) return (
-    <div className="p-6 text-red-600 bg-red-50 rounded-lg border border-red-100 text-center font-medium">
+    <div className="p-6 text-terracotta bg-terracotta-light rounded-xl border border-terracotta/20 text-center font-medium">
       {error}
     </div>
   );
 
   return (
     <>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8 animate-fade-up">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Clientes</h1>
-          <p className="text-sm text-gray-500 mt-1">Base de datos de clientes.</p>
+          <p className="eyebrow mb-2">Cialco · Clientes</p>
+          <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink tracking-tight">Clientes</h1>
+          <p className="text-sm text-ink-muted mt-1.5">Base de datos de clientes.</p>
         </div>
         <Link to="/crear-cliente" className="w-full sm:w-auto">
           <Button className="w-full sm:w-auto flex items-center justify-center gap-2">
@@ -132,19 +133,20 @@ export const Clientes = () => {
         </Link>
       </div>
 
-      <Card className="mb-6 p-2 bg-gray-50/50 border-gray-100">
+      <Card className="mb-8 p-2 animate-fade-up" padding="p-2">
         <div className="relative">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-faint" />
           <input
             type="text"
             placeholder="Buscar por razón social o CUIT..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full border border-gray-200 rounded-lg pl-4 pr-4 py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-none text-base"
+            className="w-full border-0 bg-transparent rounded-xl pl-11 pr-4 py-3.5 focus:ring-0 focus:outline-none text-[15px] placeholder:text-ink-faint/80"
           />
         </div>
       </Card>
 
-      <Card className="overflow-hidden p-0">
+      <Card className="overflow-hidden p-0 animate-fade-up" padding="p-0">
         {clientesFiltrados.length > 0 ? (
           <>
             {/* Vista de tabla para desktop */}
@@ -153,8 +155,8 @@ export const Clientes = () => {
                 items={clientesFiltrados}
                 columns={["Razón Social", "CUIT", "Acciones"]}
                 renderCells={(c) => [
-                  <Link to={`/clientes/${c.id}`} className="font-medium text-blue-600 hover:underline">{c.razonSocial}</Link>,
-                  <span className="font-mono text-gray-600">{c.cuit}</span>,
+                  <Link to={`/clientes/${c.id}`} className="font-semibold text-cialco hover:underline">{c.razonSocial}</Link>,
+                  <span className="font-mono text-ink-muted">{c.cuit || '-'}</span>,
                   <div className="flex gap-2">
                     <Link to={`/clientes/${c.id}`}>
                       <Button size="sm" variant="info">Ver</Button>
@@ -175,32 +177,32 @@ export const Clientes = () => {
             </div>
 
             {/* Vista de tarjetas para móvil */}
-            <div className="md:hidden p-3 space-y-4 bg-gray-50/50">
+            <div className="md:hidden p-4 space-y-4">
               {clientesFiltrados.map((c: Cliente) => (
                 <div
                   key={c.id}
-                  className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm active:scale-[0.98] transition-all relative overflow-hidden"
+                  className="bg-paper border border-hairline rounded-xl p-4 shadow-soft active:scale-[0.98] transition-all relative overflow-hidden"
                 >
                   {/* Indicador lateral de color cliente */}
                   <div
                     className="absolute left-0 top-0 bottom-0 w-1.5"
-                    style={{ backgroundColor: c.razonSocial ? `hsl(${stringToHue(c.razonSocial)}, 60%, 60%)` : '#d1d5db' }}
+                    style={{ backgroundColor: c.razonSocial ? `hsl(${stringToHue(c.razonSocial)}, 55%, 55%)` : '#D8CCB8' }}
                   />
 
                   <div className="flex justify-between items-start mb-4">
                     <div className="flex-1 min-w-0">
                       <Link
                         to={`/clientes/${c.id}`}
-                        className="font-black text-xl text-gray-900 hover:text-blue-600 truncate block mb-1 uppercase tracking-tight"
+                        className="font-serif text-xl font-semibold text-ink hover:text-cialco truncate block mb-1.5"
                       >
                         {c.razonSocial}
                       </Link>
                       <div
-                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border text-[11px] font-black uppercase tracking-wider"
+                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[11px] font-semibold uppercase tracking-wider"
                         style={{
-                          backgroundColor: `hsl(${stringToHue(c.razonSocial)}, 70%, 97%)`,
-                          borderColor: `hsl(${stringToHue(c.razonSocial)}, 60%, 90%)`,
-                          color: `hsl(${stringToHue(c.razonSocial)}, 70%, 35%)`
+                          backgroundColor: `hsl(${stringToHue(c.razonSocial)}, 55%, 96%)`,
+                          borderColor: `hsl(${stringToHue(c.razonSocial)}, 40%, 88%)`,
+                          color: `hsl(${stringToHue(c.razonSocial)}, 60%, 30%)`
                         }}
                       >
                         CUIT {c.cuit?.replace(/-/g, '') || "-"}
@@ -209,17 +211,17 @@ export const Clientes = () => {
                   </div>
 
                   {/* Botones de acción */}
-                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-gray-50">
+                  <div className="grid grid-cols-3 gap-2 pt-3 border-t border-hairline/70">
                     <Link to={`/clientes/${c.id}`} className="w-full">
-                      <Button size="sm" variant="info" className="w-full h-9 text-[10px] font-black uppercase tracking-tighter">VER</Button>
+                      <Button size="sm" variant="info" className="w-full h-9 text-[10px] font-bold uppercase tracking-tighter">VER</Button>
                     </Link>
                     <Link to={`/editar-cliente/${c.id}`} className="w-full">
-                      <Button size="sm" variant="warning" className="w-full h-9 text-[10px] font-black uppercase tracking-tighter">EDITAR</Button>
+                      <Button size="sm" variant="warning" className="w-full h-9 text-[10px] font-bold uppercase tracking-tighter">EDITAR</Button>
                     </Link>
                     <Button
                       size="sm"
                       variant="danger"
-                      className="w-full h-9 text-[10px] font-black uppercase tracking-tighter"
+                      className="w-full h-9 text-[10px] font-bold uppercase tracking-tighter"
                       onClick={() => handleDelete(c)}
                     >
                       BORRAR
@@ -230,7 +232,7 @@ export const Clientes = () => {
             </div>
           </>
         ) : (
-          <div className="p-12 text-center text-gray-500">
+          <div className="p-14 text-center text-ink-faint">
             No se encontraron clientes que coincidan con los filtros.
           </div>
         )}

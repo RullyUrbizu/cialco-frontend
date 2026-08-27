@@ -8,7 +8,7 @@ Aplicación web moderna para la gestión integral de stock, clientes, movimiento
 
 ## Tecnologías
 
-- **Framework**: React 18
+- **Framework**: React 19
 - **Lenguaje**: TypeScript
 - **Build Tool**: Vite
 - **UI Framework**: Tailwind CSS
@@ -17,6 +17,7 @@ Aplicación web moderna para la gestión integral de stock, clientes, movimiento
 - **Gestión de estado**: React Context API
 - **Gráficos**: Recharts
 - **Validación de formularios**: React Hook Form
+- **Renderizado Markdown**: react-markdown + remark-gfm
 
 ## Requisitos previos
 
@@ -90,6 +91,9 @@ npm run dev            # Inicia el servidor de desarrollo con hot-reload
 npm run build          # Compila el proyecto para producción
 npm run preview        # Vista previa de la build de producción
 
+# Testing
+npm run test           # Ejecuta tests unitarios (Vitest)
+
 # Linting
 npm run lint           # Ejecuta ESLint para verificar el código
 ```
@@ -98,24 +102,17 @@ npm run lint           # Ejecuta ESLint para verificar el código
 
 ```
 src/
-├── components/        # Componentes reutilizables
-│   ├── Layout/       # Componentes de layout (Navbar, Sidebar, etc.)
-│   ├── Forms/        # Formularios
-│   └── UI/           # Componentes de UI genéricos
-├── pages/            # Páginas de la aplicación
-│   ├── Clientes/     # Gestión de clientes
-│   ├── Movimientos/  # Gestión de movimientos
-│   ├── Colectas/     # Gestión de colectas
-│   ├── Dashboard/    # Panel principal
-│   └── Auth/         # Autenticación
-├── services/         # Servicios de API
-├── context/          # Contextos de React
-├── hooks/            # Custom hooks
-├── types/            # Definiciones de TypeScript
-├── utils/            # Utilidades y helpers
-├── assets/           # Recursos estáticos
-├── App.tsx           # Componente principal
-└── main.tsx          # Punto de entrada
+├── api/             # Configuración de Axios y clientes HTTP
+├── components/      # Componentes de la aplicación
+│   ├── ai/          # Asistente de IA (AiChat, aiApi, Markdown)
+│   ├── Layout/      # Layout principal con Sidebar
+│   ├── lista/       # Componente de listas reutilizable
+│   └── ui/          # Componentes de UI (Button, Card, Skeleton, etc.)
+├── hooks/           # Custom hooks (useColectas, useToros, useClientes, etc.)
+├── Modelo/          # Definiciones de TypeScript (Colecta, Toro, Cliente, etc.)
+├── test/            # Configuración de tests
+├── App.tsx          # Componente principal con rutas
+└── main.tsx         # Punto de entrada
 ```
 
 ## Características principales
@@ -171,14 +168,13 @@ export default defineConfig([
 ])
 ```
 
-## Temas y estilos
-
-El proyecto utiliza Material-UI con un tema personalizado que incluye:
-
-- Paleta de colores corporativa
-- Componentes personalizados
-- Modo claro/oscuro (opcional)
-- Diseño responsive
+### Asistente de IA
+- Chat interactivo con inteligencia artificial (Google Gemini)
+- Consultas en lenguaje natural sobre stock, clientes, toros y movimientos
+- Renderizado de respuestas con Markdown (tablas, listas, código)
+- Anonimización de datos sensibles (Gemini nunca recibe razones sociales reales)
+- Cancelación de peticiones con AbortController
+- Reintento automático para errores transitorios de red
 
 ## Solución de problemas
 

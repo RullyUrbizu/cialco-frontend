@@ -80,10 +80,10 @@ export const TermosView = () => {
     }, [colectas, termos]);
 
     const getColorByPercentage = (porcentaje: number): string => {
-        if (porcentaje >= 90) return "bg-red-500";
-        if (porcentaje >= 70) return "bg-orange-500";
-        if (porcentaje >= 50) return "bg-yellow-500";
-        return "bg-green-500";
+        if (porcentaje >= 90) return "bg-terracotta";
+        if (porcentaje >= 70) return "bg-harvest";
+        if (porcentaje >= 50) return "bg-brass";
+        return "bg-pine";
     };
 
     const handleTermoCreated = () => {
@@ -116,15 +116,16 @@ export const TermosView = () => {
         }
     };
 
-    if (loadingColectas || loadingTermos) return <div className="p-8 text-center text-gray-500">Cargando termos...</div>;
-    if (errorColectas || errorTermos) return <div className="p-6 text-red-600 bg-red-50 rounded-lg">{errorColectas || errorTermos}</div>;
+    if (loadingColectas || loadingTermos) return <div className="p-8 text-center text-ink-faint">Cargando termos...</div>;
+    if (errorColectas || errorTermos) return <div className="p-6 text-terracotta bg-terracotta-light rounded-xl border border-terracotta/20">{errorColectas || errorTermos}</div>;
 
     return (
-        <div>
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
+        <div className="animate-fade-up">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Ocupación de Termos</h1>
-                    <p className="text-gray-500 mt-1">Visualiza el estado de capacidad de cada termo.</p>
+                    <p className="eyebrow mb-2">Cialco · Capacidad</p>
+                    <h1 className="font-serif text-3xl sm:text-4xl font-semibold text-ink tracking-tight">Ocupación de Termos</h1>
+                    <p className="text-ink-muted mt-1.5">Visualiza el estado de capacidad de cada termo.</p>
                 </div>
                 <Button onClick={() => setIsModalOpen(true)} className="w-full sm:w-auto">
                     <Plus className="mr-2 h-4 w-4" />
@@ -136,21 +137,21 @@ export const TermosView = () => {
                 {termosData.map((termo) => (
                     <Card
                         key={termo.id}
-                        className={`p-6 transition-all duration-300 ${!termo.activo ? 'grayscale opacity-60 bg-gray-50' : ''}`}
+                        className={`p-6 transition-all duration-300 hover:shadow-lift ${!termo.activo ? 'grayscale opacity-60 bg-ivory-100' : ''}`}
                     >
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex flex-col">
-                                <h3 className="text-xl font-bold text-gray-900">{termo.codigo}</h3>
-                                {!termo.activo && <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Desactivado</span>}
+                                <h3 className="font-serif text-xl font-semibold text-ink">{termo.codigo}</h3>
+                                {!termo.activo && <span className="text-[10px] font-semibold text-ink-faint uppercase tracking-wider mt-1">Desactivado</span>}
                             </div>
-                            <span className={`text-2xl font-bold ${!termo.activo ? 'text-gray-400' : 'text-blue-600'}`}>{termo.porcentaje}%</span>
+                            <span className={`font-serif text-2xl font-semibold tabular ${!termo.activo ? 'text-ink-faint' : 'text-cialco'}`}>{termo.porcentaje}%</span>
                         </div>
 
                         {/* Barra de progreso */}
                         <div className="mb-4">
-                            <div className="w-full bg-gray-200 rounded-full h-6 overflow-hidden">
+                            <div className="w-full bg-ivory-200/80 rounded-full h-6 overflow-hidden border border-hairline">
                                 <div
-                                    className={`h-full ${termo.activo ? getColorByPercentage(termo.porcentaje) : 'bg-gray-400'} transition-all duration-500 flex items-center justify-center text-white text-xs font-semibold`}
+                                    className={`h-full ${termo.activo ? getColorByPercentage(termo.porcentaje) : 'bg-sand'} transition-all duration-500 flex items-center justify-center text-white text-xs font-semibold`}
                                     style={{ width: `${Math.min(termo.porcentaje, 100)}%` }}
                                 >
                                     {termo.porcentaje > 10 && `${termo.porcentaje}%`}
@@ -161,41 +162,41 @@ export const TermosView = () => {
                         {/* Información detallada */}
                         <div className="space-y-2 text-sm">
                             <div className="flex justify-between">
-                                <span className="text-gray-600">Ocupado:</span>
-                                <span className="font-semibold text-gray-900">{termo.ocupado} pajuelas</span>
+                                <span className="text-ink-muted">Ocupado:</span>
+                                <span className="font-semibold text-ink tabular">{termo.ocupado} pajuelas</span>
                             </div>
                             <div className="flex justify-between">
-                                <span className="text-gray-600">Disponible:</span>
-                                <span className={`font-semibold ${!termo.activo ? 'text-gray-500' : 'text-green-600'}`}>
+                                <span className="text-ink-muted">Disponible:</span>
+                                <span className={`font-semibold tabular ${!termo.activo ? 'text-ink-faint' : 'text-pine'}`}>
                                     {termo.capacidadTotal - termo.ocupado} pajuelas
                                 </span>
                             </div>
-                            <div className="flex justify-between border-t border-gray-100 pt-2">
-                                <span className="text-gray-600">Capacidad Total:</span>
-                                <span className="font-semibold text-gray-900">{termo.capacidadTotal} pajuelas</span>
+                            <div className="flex justify-between border-t border-hairline pt-2">
+                                <span className="text-ink-muted">Capacidad Total:</span>
+                                <span className="font-semibold text-ink tabular">{termo.capacidadTotal} pajuelas</span>
                             </div>
                         </div>
 
                         {/* Indicador visual de estado y Botón de Acción */}
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
+                        <div className="mt-4 pt-4 border-t border-hairline flex justify-between items-center">
                             <div className="flex-1">
                                 {termo.activo ? (
                                     <>
                                         {termo.porcentaje >= 100 && (
-                                            <div className="text-xs text-red-600 font-semibold">⚠️ Lleno</div>
+                                            <div className="text-xs text-terracotta font-semibold">⚠️ Lleno</div>
                                         )}
                                         {termo.porcentaje >= 90 && termo.porcentaje < 100 && (
-                                            <div className="text-xs text-red-600 font-semibold">⚠️ Casi lleno</div>
+                                            <div className="text-xs text-terracotta font-semibold">⚠️ Casi lleno</div>
                                         )}
                                         {termo.porcentaje >= 70 && termo.porcentaje < 90 && (
-                                            <div className="text-xs text-orange-600 font-semibold">⚡ Alta ocupación</div>
+                                            <div className="text-xs text-harvest font-semibold">⚡ Alta ocupación</div>
                                         )}
                                         {termo.porcentaje < 70 && (
-                                            <div className="text-xs text-green-600 font-semibold">✓ Espacio disponible</div>
+                                            <div className="text-xs text-pine font-semibold">✓ Espacio disponible</div>
                                         )}
                                     </>
                                 ) : (
-                                    <div className="text-xs text-gray-500 font-medium italic">Fuera de servicio</div>
+                                    <div className="text-xs text-ink-faint font-medium italic">Fuera de servicio</div>
                                 )}
                             </div>
 
@@ -213,7 +214,7 @@ export const TermosView = () => {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => setConfirmDelete({ isOpen: true, id: termo.id, codigo: termo.codigo })}
-                                    className="text-red-500 hover:bg-red-50 py-1 px-2"
+                                    className="text-terracotta hover:bg-terracotta-light py-1 px-2"
                                     title="Eliminar termo"
                                 >
                                     <Trash2 className="h-4 w-4" />
@@ -225,7 +226,7 @@ export const TermosView = () => {
             </div>
 
             {termosData.length === 0 && (
-                <Card className="p-8 text-center text-gray-500">
+                <Card className="p-8 text-center text-ink-faint">
                     No hay termos registrados.
                 </Card>
             )}
