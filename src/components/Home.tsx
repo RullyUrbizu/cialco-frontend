@@ -14,6 +14,7 @@ import { ConfirmModal } from "./ui/ConfirmModal";
 import * as XLSX from "xlsx";
 import { ExportMenu } from "./ui/ExportMenu";
 import { Search, PackageOpen, Plus } from "lucide-react";
+import { api } from "../api/api";
 
 export const Home = () => {
   const {
@@ -91,149 +92,233 @@ export const Home = () => {
     return Math.abs(hash % 360);
   };
 
-  const exportToPDF = () => {
-    const doc = new jsPDF();
-    const azulCialco = [0, 51, 153];
-    const grisOscuro = [60, 60, 60];
-    const grisClaro = [150, 150, 150];
-
-    // --- ENCABEZADO CORPORATIVO ---
-    // Nombre de la Empresa
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(24);
-    doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
-    doc.text("CIALCO", 14, 22);
-
-    // Eslogan
-    doc.setFont("helvetica", "italic");
-    doc.setFontSize(10);
-    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
-    doc.text("Agregá valor a tu producción", 14, 28);
-
-    // Título del Reporte e Info de Emisión
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(14);
-    doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
-    doc.text("REPORTE DE STOCK DE COLECTAS", 14, 45);
-
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(9);
-    doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
-    doc.text(`Fecha de emisión: ${new Date().toLocaleString('es-AR')}`, 14, 50);
-
-    // Filtros aplicados
-    if (searchTerm) {
-      doc.setFont("helvetica", "bold");
-      doc.text(`Filtros: `, 14, 56);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Búsqueda "${searchTerm}"`, 26, 56);
-    }
-
-    // --- TABLA DE DATOS ---
-    const tableData = colectas.map(c => [
-      c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
-      c.toro?.nombre || "-",
-      c.toro?.raza || "-",
-      (c.inventario?.cantidadInicial ?? c.cantidad ?? 0).toString(),
-      c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
-      c.cliente?.razonSocial || "-"
-    ]);
-
-    autoTable(doc, {
-      startY: 62,
-      head: [["Ubicación (Termo/Canast)", "Toro", "Raza", "Cant.", "Fecha", "Cliente"]],
-      body: tableData,
-      theme: 'striped',
-      headStyles: {
-        fillColor: azulCialco as [number, number, number],
-        textColor: 255,
-        fontSize: 9,
-        fontStyle: 'bold',
-        halign: 'center'
-      },
-      styles: {
-        fontSize: 8,
-        cellPadding: 3,
-        valign: 'middle'
-      },
-      columnStyles: {
-        3: { halign: 'center', fontStyle: 'bold' }, // Cantidad
-        4: { halign: 'center' } // Fecha
-      },
-      alternateRowStyles: {
-        fillColor: [245, 248, 255]
-      },
-      margin: { top: 62 },
-      didDrawPage: () => {
-        // --- PIE DE PÁGINA (Se repite en cada página) ---
-        const pageSize = doc.internal.pageSize;
-        const pageHeight = pageSize.height ? pageSize.height : pageSize.getHeight();
-
-        doc.setFontSize(8);
-        doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
-
-        // Línea divisoria
-        doc.setDrawColor(grisClaro[0], grisClaro[1], grisClaro[2]);
-        doc.line(14, pageHeight - 25, pageSize.width - 14, pageHeight - 25);
-
-        // Información de contacto
-        const contactY = pageHeight - 20;
-        doc.text("Av. 25 de Mayo 659, Gral. Belgrano, Buenos Aires", 14, contactY);
-        doc.text("Tel: +54 22 4154-5133 | cialco107@yahoo.com.ar", 14, contactY + 4);
-        doc.text("www.cialco.netlify.app", 14, contactY + 8);
-
-        // Numeración
-        const str = "Página " + (doc as any).internal.getNumberOfPages();
-        doc.text(str, pageSize.width - 30, contactY + 8);
-      }
+  const fetchAllColectas = async (): Promise<Colecta[]> => {
+    const res = await api.get<{ data: Colecta[]; total: number }>("/colectas", {
+      params: { page: 1, limit: 99999, search: searchTerm || undefined }
     });
-
-    // Resumen Final
-    const finalY = (doc as any).lastAutoTable.finalY || 100;
-    const totalDosis = colectas.reduce((acc: number, c: Colecta) => acc + (c.cantidad || 0), 0);
-
-    if (finalY < 250) { // Evitar pisar el footer
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
-      doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
-      doc.text(`Stock Total del Reporte: ${totalDosis} dosis`, 14, finalY + 15);
-      doc.setFontSize(8);
-      doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
-      doc.text(`Total de registros: ${totalRecords} colectas`, 14, finalY + 20);
-    }
-
-    // Guardar PDF
-    const timestamp = new Date().toISOString().split('T')[0];
-    doc.save(`cialco-reporte-stock-${timestamp}.pdf`);
+    return res.data.data;
   };
 
-  const exportToXLSX = () => {
-    const data = colectas.map(c => ({
-      "Ubicación (Termo/Canast)": c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
-      "Toro": c.toro?.nombre || "-",
-      "Raza": c.toro?.raza || "-",
-      "Cantidad": c.inventario?.cantidadInicial ?? c.cantidad ?? 0,
-      "Fecha": c.fecha ? new Date(c.fecha).toLocaleDateString('es-AR') : "-",
-      "Cliente": c.cliente?.razonSocial || "-"
-    }));
+  const formatFechaPDF = (fecha: unknown): string => {
+    const str = String(fecha ?? "");
+    const parts = str.split("T")[0].split("-");
+    if (parts.length === 3) {
+      const [y, m, d] = parts;
+      return `${d}/${m}/${y}`;
+    }
+    return str || "-";
+  };
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Stock");
+  const exportToPDF = async () => {
+    try {
+      const data = await fetchAllColectas();
+      const doc = new jsPDF();
+      const w = doc.internal.pageSize.getWidth();
+      const azulCialco = [0, 51, 153];
+      const grisOscuro = [50, 50, 50];
+      const grisClaro = [180, 180, 180];
+      const grisBorde = [220, 220, 220];
 
-    // Ajustar anchos de columna
-    const wscols = [
-      { wch: 30 }, // Ubicación
-      { wch: 20 }, // Toro
-      { wch: 15 }, // Raza
-      { wch: 10 }, // Cantidad
-      { wch: 15 }, // Fecha
-      { wch: 30 }, // Cliente
-    ];
-    ws['!cols'] = wscols;
+      // --- BARRA SUPERIOR ---
+      doc.setFillColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+      doc.rect(0, 0, w, 36, "F");
 
-    const timestamp = new Date().toISOString().split('T')[0];
-    XLSX.writeFile(wb, `cialco-reporte-stock-${timestamp}.xlsx`);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(22);
+      doc.setTextColor(255, 255, 255);
+      doc.text("CIALCO", 14, 16);
+
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(9);
+      doc.setTextColor(200, 210, 230);
+      doc.text("Agregá valor a tu producción", 14, 23);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.text(`Exp.: ${new Date().toLocaleDateString("es-AR")}`, w - 14, 16, { align: "right" });
+      doc.text(`Confidencial`, w - 14, 23, { align: "right" });
+
+      // --- LÍNEA DE ACENTO ---
+      doc.setFillColor(164, 134, 63); // brass
+      doc.rect(0, 36, w, 1.5, "F");
+
+      // --- TÍTULO DEL REPORTE ---
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+      doc.text("REPORTE DE STOCK DE COLECTAS", 14, 48);
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(8);
+      doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+      doc.text(`Fecha de emisión: ${new Date().toLocaleString("es-AR")}`, 14, 53);
+
+      // --- FILTROS ---
+      let tableStartY = 60;
+      if (searchTerm) {
+        doc.setFillColor(246, 241, 232); // ivory
+        doc.roundedRect(14, 56, w - 28, 8, 1.5, 1.5, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(8);
+        doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+        doc.text("FILTRO ACTIVO:", 18, 61.2);
+        doc.setFont("helvetica", "normal");
+        doc.text(` Búsqueda "${searchTerm}"`, 48, 61.2);
+        tableStartY = 68;
+      }
+
+      // --- TABLA ---
+      const tableData = data.map(c => [
+        c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(", ") || "-",
+        c.toro?.nombre || "-",
+        c.toro?.raza || "-",
+        String(c.inventario?.stockActual ?? 0),
+        formatFechaPDF(c.fecha),
+        c.cliente?.razonSocial || "-",
+      ]);
+
+      autoTable(doc, {
+        startY: tableStartY,
+        head: [["UBICACIÓN", "TORO", "RAZA", "DOSIS", "FECHA", "CLIENTE"]],
+        body: tableData,
+        theme: "grid",
+        headStyles: {
+          fillColor: azulCialco as [number, number, number],
+          textColor: 255,
+          fontSize: 7.5,
+          fontStyle: "bold",
+          halign: "center",
+          cellPadding: 3,
+          lineColor: grisBorde,
+          lineWidth: 0.3,
+        },
+        styles: {
+          fontSize: 8,
+          cellPadding: 2.5,
+          valign: "middle",
+          lineColor: grisBorde,
+          lineWidth: 0.2,
+          textColor: grisOscuro,
+        },
+        columnStyles: {
+          0: { cellWidth: 42, fontSize: 7 },
+          3: { halign: "center", fontStyle: "bold", textColor: azulCialco },
+          4: { halign: "center", cellWidth: 22 },
+          5: { cellWidth: 38 },
+        },
+        alternateRowStyles: { fillColor: [248, 249, 253] },
+        margin: { left: 14, right: 14, bottom: 35 },
+        didDrawPage: () => {
+          const ph = doc.internal.pageSize.getHeight();
+
+          // Línea superior del footer
+          doc.setDrawColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+          doc.setLineWidth(0.3);
+          doc.line(14, ph - 28, w - 14, ph - 28);
+
+          // Info de contacto
+          doc.setFontSize(7);
+          doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+          doc.text("Av. 25 de Mayo 659, Gral. Belgrano, Buenos Aires", 14, ph - 23);
+          doc.text("Tel: +54 22 4154-5133  |  cialco107@yahoo.com.ar", 14, ph - 19);
+
+          // Numeración de página
+          doc.setFont("helvetica", "bold");
+          doc.setFontSize(7);
+          doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+          const pageNum = (doc as any).internal.getNumberOfPages();
+          doc.text(`Pág. ${pageNum}`, w - 14, ph - 19, { align: "right" });
+
+          // Línea inferior
+          doc.setFillColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+          doc.rect(0, ph - 8, w, 8, "F");
+          doc.setFontSize(6);
+          doc.setTextColor(255, 255, 255);
+          doc.text("Stock Cialco  —  Sistema de Gestión de Inventario", 14, ph - 3);
+        },
+      });
+
+      // --- RESUMEN ---
+      const finalY = (doc as any).lastAutoTable.finalY || 100;
+      const totalDosis = data.reduce((acc, c) => acc + (c.inventario?.stockActual ?? 0), 0);
+
+      if (finalY < 240) {
+        const boxY = finalY + 10;
+
+        // Fondo del resumen
+        doc.setFillColor(246, 241, 232);
+        doc.roundedRect(14, boxY, w - 28, 20, 2, 2, "F");
+        doc.setDrawColor(164, 134, 63);
+        doc.setLineWidth(0.4);
+        doc.roundedRect(14, boxY, w - 28, 20, 2, 2, "S");
+
+        // Datos del resumen
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(9);
+        doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+        doc.text("RESUMEN DEL REPORTE", 20, boxY + 7);
+
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(8);
+        doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+        doc.text(`Registros: ${data.length} colectas`, 20, boxY + 14);
+        doc.text(`Stock total: ${totalDosis} dosis`, 20, boxY + 19);
+
+        // Dosis destacadas
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(16);
+        doc.setTextColor(azulCialco[0], azulCialco[1], azulCialco[2]);
+        doc.text(`${totalDosis}`, w - 20, boxY + 15, { align: "right" });
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(7);
+        doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+        doc.text("DOSIS DISPONIBLES", w - 20, boxY + 19, { align: "right" });
+      }
+
+      const timestamp = new Date().toISOString().split("T")[0];
+      doc.save(`cialco-reporte-stock-${timestamp}.pdf`);
+    } catch {
+      toast.error("Error al generar el reporte PDF");
+    }
+  };
+
+  const exportToXLSX = async () => {
+    try {
+      const data = await fetchAllColectas();
+      const rows = data.map(c => ({
+        "Ubicación (Termo/Canast)": c.contenedores?.map(cont => `${cont.termo?.codigo ?? "-"} (${cont.canastillo?.codigo ?? "-"})`).join(', ') || "-",
+        "Toro": c.toro?.nombre || "-",
+        "Raza": c.toro?.raza || "-",
+        "Dosis": c.inventario?.stockActual ?? 0,
+        "Fecha": formatFechaPDF(c.fecha),
+        "Cliente": c.cliente?.razonSocial || "-"
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Stock");
+
+      // Filtros activos como metadata
+      if (searchTerm) {
+        const filterRow = [{ "Filtros aplicados": `Búsqueda: "${searchTerm}"` }];
+        const filterWs = XLSX.utils.json_to_sheet(filterRow);
+        XLSX.utils.book_append_sheet(wb, filterWs, "Filtros");
+      }
+
+      ws['!cols'] = [
+        { wch: 30 },
+        { wch: 20 },
+        { wch: 15 },
+        { wch: 10 },
+        { wch: 15 },
+        { wch: 30 },
+      ];
+
+      const timestamp = new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb, `cialco-reporte-stock-${timestamp}.xlsx`);
+    } catch {
+      toast.error("Error al generar el archivo Excel");
+    }
   };
 
   // Skeleton de carga inicial (solo cuando no hay datos cargados todavía)

@@ -9,6 +9,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { ExportMenu } from "./ui/ExportMenu";
+import { toast } from "sonner";
 
 export const HistorialView = () => {
     const [movimientos, setMovimientos] = useState<Movimiento[]>([]);
@@ -57,74 +58,220 @@ export const HistorialView = () => {
         });
     }, [movimientos, searchTerm, filterTipo, fechaDesde, fechaHasta]);
 
-    const exportToPDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(18);
-        doc.text("Historial de Movimientos - Cialco", 14, 20);
+    const getCliente = (m: Movimiento) =>
+        m.cliente?.razonSocial || m.inventario?.colecta?.cliente?.razonSocial || "-";
 
-        doc.setFontSize(10);
-        doc.text(`Generado: ${new Date().toLocaleString('es-AR')}`, 14, 28);
-
-        if (searchTerm || filterTipo !== "todos" || fechaDesde || fechaHasta) {
-            let filtros = "Filtros: ";
-            if (searchTerm) filtros += `Busq: ${searchTerm} | `;
-            if (filterTipo !== "todos") filtros += `Tipo: ${filterTipo} | `;
-            if (fechaDesde) filtros += `Desde: ${fechaDesde} | `;
-            if (fechaHasta) filtros += `Hasta: ${fechaHasta}`;
-            doc.setFontSize(8);
-            doc.setTextColor(100);
-            doc.text(filtros, 14, 34);
-            doc.setTextColor(0);
+    const formatFecha = (fecha: unknown): string => {
+        const str = String(fecha ?? "");
+        const parts = str.split("T")[0].split("-");
+        if (parts.length === 3) {
+            const [y, m, d] = parts;
+            return `${d}/${m}/${y}`;
         }
+        return str || "-";
+    };
 
-        const tableData = historialFiltrado.map(m => [
-            new Date(m.fecha).toLocaleDateString('es-AR'),
-            m.tipo.toUpperCase(),
-            m.inventario?.colecta?.toro?.nombre || "-",
-            m.cantidad.toString(),
-            m.cliente?.razonSocial || "-",
-            m.remito || "-"
-        ]);
+    const exportToPDF = () => {
+        try {
+            const doc = new jsPDF();
+            const w = doc.internal.pageSize.getWidth();
+            const pine = [31, 74, 54];
+            const grisOscuro = [50, 50, 50];
+            const grisClaro = [180, 180, 180];
+            const grisBorde = [220, 220, 220];
 
-        autoTable(doc, {
-            startY: 38,
-            head: [["Fecha", "Tipo", "Toro", "Cant.", "Cliente", "Remito"]],
-            body: tableData,
-            theme: 'grid',
-            headStyles: { fillColor: [31, 74, 54] },
-            styles: { fontSize: 8 }
-        });
+            // --- BARRA SUPERIOR ---
+            doc.setFillColor(pine[0], pine[1], pine[2]);
+            doc.rect(0, 0, w, 36, "F");
 
-        doc.save(`historial-movimientos-${new Date().toISOString().split('T')[0]}.pdf`);
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(255, 255, 255);
+            doc.text("CIALCO", 14, 16);
+
+            doc.setFont("helvetica", "italic");
+            doc.setFontSize(9);
+            doc.setTextColor(200, 220, 210);
+            doc.text("Agregá valor a tu producción", 14, 23);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.text(`Exp.: ${new Date().toLocaleDateString("es-AR")}`, w - 14, 16, { align: "right" });
+            doc.text(`Confidencial`, w - 14, 23, { align: "right" });
+
+            // --- LÍNEA DE ACENTO ---
+            doc.setFillColor(164, 134, 63);
+            doc.rect(0, 36, w, 1.5, "F");
+
+            // --- TÍTULO ---
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(13);
+            doc.setTextColor(pine[0], pine[1], pine[2]);
+            doc.text("HISTORIAL DE MOVIMIENTOS", 14, 48);
+
+            doc.setFont("helvetica", "normal");
+            doc.setFontSize(8);
+            doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+            doc.text(`Fecha de emisión: ${new Date().toLocaleString("es-AR")}`, 14, 53);
+
+            // --- FILTROS ---
+            let tableStartY = 60;
+            if (searchTerm || filterTipo !== "todos" || fechaDesde || fechaHasta) {
+                doc.setFillColor(246, 241, 232);
+                doc.roundedRect(14, 56, w - 28, 8, 1.5, 1.5, "F");
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(8);
+                doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+                doc.text("FILTROS ACTIVOS:", 18, 61.2);
+                let filtroStr = "";
+                if (searchTerm) filtroStr += `Búsqueda "${searchTerm}" `;
+                if (filterTipo !== "todos") filtroStr += `| Tipo: ${filterTipo} `;
+                if (fechaDesde) filtroStr += `| Desde: ${fechaDesde} `;
+                if (fechaHasta) filtroStr += `| Hasta: ${fechaHasta}`;
+                doc.setFont("helvetica", "normal");
+                doc.text(filtroStr, 52, 61.2);
+                tableStartY = 68;
+            }
+
+            // --- TABLA ---
+            const tableData = historialFiltrado.map(m => [
+                formatFecha(m.fecha),
+                m.tipo === "ingreso" ? "INGRESO" : "SALIDA",
+                m.inventario?.colecta?.toro?.nombre || "-",
+                String(m.cantidad),
+                getCliente(m),
+                m.remito || "-",
+            ]);
+
+            autoTable(doc, {
+                startY: tableStartY,
+                head: [["FECHA", "TIPO", "TORO", "CANT.", "CLIENTE", "REMITO"]],
+                body: tableData,
+                theme: "grid",
+                headStyles: {
+                    fillColor: pine as [number, number, number],
+                    textColor: 255,
+                    fontSize: 7.5,
+                    fontStyle: "bold",
+                    halign: "center",
+                    cellPadding: 3,
+                    lineColor: grisBorde,
+                    lineWidth: 0.3,
+                },
+                styles: {
+                    fontSize: 8,
+                    cellPadding: 2.5,
+                    valign: "middle",
+                    lineColor: grisBorde,
+                    lineWidth: 0.2,
+                    textColor: grisOscuro,
+                },
+                columnStyles: {
+                    0: { cellWidth: 24, halign: "center" },
+                    1: { halign: "center", fontStyle: "bold", cellWidth: 20 },
+                    3: { halign: "center", fontStyle: "bold" },
+                    4: { cellWidth: 40 },
+                    5: { cellWidth: 26 },
+                },
+                alternateRowStyles: { fillColor: [248, 249, 253] },
+                margin: { left: 14, right: 14, bottom: 35 },
+                didDrawPage: () => {
+                    const ph = doc.internal.pageSize.getHeight();
+
+                    doc.setDrawColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+                    doc.setLineWidth(0.3);
+                    doc.line(14, ph - 28, w - 14, ph - 28);
+
+                    doc.setFontSize(7);
+                    doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+                    doc.text("Av. 25 de Mayo 659, Gral. Belgrano, Buenos Aires", 14, ph - 23);
+                    doc.text("Tel: +54 22 4154-5133  |  cialco107@yahoo.com.ar", 14, ph - 19);
+
+                    doc.setFont("helvetica", "bold");
+                    doc.setFontSize(7);
+                    doc.setTextColor(grisClaro[0], grisClaro[1], grisClaro[2]);
+                    const pageNum = (doc as any).internal.getNumberOfPages();
+                    doc.text(`Pág. ${pageNum}`, w - 14, ph - 19, { align: "right" });
+
+                    doc.setFillColor(pine[0], pine[1], pine[2]);
+                    doc.rect(0, ph - 8, w, 8, "F");
+                    doc.setFontSize(6);
+                    doc.setTextColor(255, 255, 255);
+                    doc.text("Stock Cialco  —  Sistema de Gestión de Inventario", 14, ph - 3);
+                },
+            });
+
+            // --- RESUMEN ---
+            const finalY = (doc as any).lastAutoTable.finalY || 100;
+            const totalIngresos = historialFiltrado.filter(m => m.tipo === "ingreso").reduce((acc, m) => acc + m.cantidad, 0);
+            const totalSalidas = historialFiltrado.filter(m => m.tipo === "salida").reduce((acc, m) => acc + m.cantidad, 0);
+
+            if (finalY < 240) {
+                const boxY = finalY + 10;
+
+                doc.setFillColor(246, 241, 232);
+                doc.roundedRect(14, boxY, w - 28, 20, 2, 2, "F");
+                doc.setDrawColor(164, 134, 63);
+                doc.setLineWidth(0.4);
+                doc.roundedRect(14, boxY, w - 28, 20, 2, 2, "S");
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(9);
+                doc.setTextColor(pine[0], pine[1], pine[2]);
+                doc.text("RESUMEN DEL REPORTE", 20, boxY + 7);
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(8);
+                doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+                doc.text(`Movimientos: ${historialFiltrado.length} registros`, 20, boxY + 14);
+                doc.text(`Ingresos: ${totalIngresos} dosis  |  Salidas: ${totalSalidas} dosis`, 20, boxY + 19);
+
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(16);
+                doc.setTextColor(pine[0], pine[1], pine[2]);
+                doc.text(`${totalIngresos - totalSalidas}`, w - 20, boxY + 15, { align: "right" });
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(7);
+                doc.setTextColor(grisOscuro[0], grisOscuro[1], grisOscuro[2]);
+                doc.text("SALDO NETO", w - 20, boxY + 19, { align: "right" });
+            }
+
+            const timestamp = new Date().toISOString().split("T")[0];
+            doc.save(`historial-movimientos-${timestamp}.pdf`);
+        } catch {
+            toast.error("Error al generar el reporte PDF");
+        }
     };
 
     const exportToXLSX = () => {
-        const data = historialFiltrado.map(m => ({
-            "Fecha": new Date(m.fecha).toLocaleDateString('es-AR'),
-            "Tipo": m.tipo.toUpperCase(),
-            "Toro": m.inventario?.colecta?.toro?.nombre || "-",
-            "Cantidad": m.cantidad || 0,
-            "Cliente": m.cliente?.razonSocial || m.inventario?.colecta?.cliente?.razonSocial || "-",
-            "Remito": m.remito || "-"
-        }));
+        try {
+            const data = historialFiltrado.map(m => ({
+                "Fecha": formatFecha(m.fecha),
+                "Tipo": m.tipo.toUpperCase(),
+                "Toro": m.inventario?.colecta?.toro?.nombre || "-",
+                "Cantidad": m.cantidad || 0,
+                "Cliente": getCliente(m),
+                "Remito": m.remito || "-"
+            }));
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Historial");
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Historial");
 
-        // Ajustar anchos de columna
-        const wscols = [
-            { wch: 15 }, // Fecha
-            { wch: 10 }, // Tipo
-            { wch: 20 }, // Toro
-            { wch: 10 }, // Cantidad
-            { wch: 30 }, // Cliente
-            { wch: 15 }, // Remito
-        ];
-        ws['!cols'] = wscols;
+            ws['!cols'] = [
+                { wch: 15 },
+                { wch: 10 },
+                { wch: 20 },
+                { wch: 10 },
+                { wch: 30 },
+                { wch: 15 },
+            ];
 
-        const timestamp = new Date().toISOString().split('T')[0];
-        XLSX.writeFile(wb, `historial-movimientos-${timestamp}.xlsx`);
+            const timestamp = new Date().toISOString().split('T')[0];
+            XLSX.writeFile(wb, `historial-movimientos-${timestamp}.xlsx`);
+        } catch {
+            toast.error("Error al generar el archivo Excel");
+        }
     };
 
     if (loading) return <div className="p-6"><TableSkeleton rows={10} /></div>;
