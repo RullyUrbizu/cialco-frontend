@@ -155,16 +155,16 @@ export const HistorialView = () => {
                     fontStyle: "bold",
                     halign: "center",
                     cellPadding: 3,
-                    lineColor: grisBorde,
+                    lineColor: grisBorde as [number, number, number],
                     lineWidth: 0.3,
                 },
                 styles: {
                     fontSize: 8,
                     cellPadding: 2.5,
                     valign: "middle",
-                    lineColor: grisBorde,
+                    lineColor: grisBorde as [number, number, number],
                     lineWidth: 0.2,
-                    textColor: grisOscuro,
+                    textColor: grisOscuro as [number, number, number],
                 },
                 columnStyles: {
                     0: { cellWidth: 24, halign: "center" },
@@ -173,7 +173,7 @@ export const HistorialView = () => {
                     4: { cellWidth: 40 },
                     5: { cellWidth: 26 },
                 },
-                alternateRowStyles: { fillColor: [248, 249, 253] },
+                alternateRowStyles: { fillColor: [248, 249, 253] as [number, number, number] },
                 margin: { left: 14, right: 14, bottom: 35 },
                 didDrawPage: () => {
                     const ph = doc.internal.pageSize.getHeight();
