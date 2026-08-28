@@ -1,5 +1,23 @@
 # Changelog
 
+## [1.2.0](https://github.com/InakiUrbizu/cialco-frontend-privado/compare/v1.1.0...v1.2.0) (2026-08-27)
+
+
+### Features
+
+* **frontend-ai:** add link sanitization for XSS prevention and rewrite aiApi to support streaming (SSE) with robust error tests ([37d1239](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/37d123936d83c33483d4696699b4ad8527eecf51))
+* **frontend-export:** enhance PDF layout design and fetch full collection data for XLSX export ([c80af76](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/c80af76fe33a5f1918f93dd84c4a57182a0e79ab))
+* implementar asistente de chat con IA en frontend ([765c400](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/765c4008a4d676a78ea91439c79044da4af54192))
+* streaming del chat IA en tiempo real ([e4b9f3a](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/e4b9f3a5a7be38bd46282b39436657c44bf9b80b))
+* update design system, components, and styles for premium UI ([b1f8dbb](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/b1f8dbbb5127eb221768212a04e7d31cb7f07a9c))
+
+
+### Bug Fixes
+
+* corregir tipos de color en exportación de PDF que rompían el build ([7b527f7](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/7b527f73bbae4a9df13e3f8e38b1805d1762d969))
+* corregir tipos de color en exportación de PDF que rompían el build ([dfa5891](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/dfa58914fa867b4b975945fd1113129a4ffcf160))
+* tests AiChat adaptados a sendChatStream ([912220c](https://github.com/InakiUrbizu/cialco-frontend-privado/commit/912220c90832cac95ca07ad0d46262d64615c9ce))
+
 ## [1.1.0](https://github.com/RullyUrbizu/cialco-frontend/compare/v1.0.0...v1.1.0) (2026-03-30)
 
 
