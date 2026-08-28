@@ -42,36 +42,36 @@ export const TermoModal = ({ isOpen, onClose, onCreated }: TermoModalProps) => {
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all">
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <h2 className="text-xl font-bold text-gray-800">Nuevo Termo</h2>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors text-2xl">
+        <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-paper rounded-2xl shadow-lift border border-hairline w-full max-w-md overflow-hidden transform transition-all animate-scale-in">
+                <div className="p-6 border-b border-hairline flex justify-between items-center bg-ivory-100">
+                    <h2 className="font-serif text-xl font-semibold text-ink">Nuevo Termo</h2>
+                    <button onClick={onClose} className="text-ink-faint hover:text-ink transition-colors text-2xl">
                         &times;
                     </button>
                 </div>
 
                 <form onSubmit={handleSubmit} className="p-6">
                     {error && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+                        <div className="mb-4 p-3 bg-terracotta-light border border-terracotta/20 text-terracotta rounded-lg text-sm">
                             {error}
                         </div>
                     )}
 
                     <div className="mb-6">
-                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <label className="field-label">
                             Código del Termo
                         </label>
                         <input
                             type="text"
                             value={codigo}
                             onChange={(e) => setCodigo(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all shadow-sm text-lg"
+                            className="field text-lg"
                             placeholder="Ej: Termo V, 47/12, etc."
                             autoFocus
                             required
                         />
-                        <p className="mt-2 text-xs text-gray-500">
+                        <p className="mt-2 text-xs text-ink-muted">
                             Ingresa un identificador único para el termo.
                         </p>
                     </div>

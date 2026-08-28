@@ -4,7 +4,7 @@ import { api } from "../api/api";
 import type { Colecta } from "../Modelo/Colecta";
 import { Card } from "./ui/Card";
 import { Button } from "./ui/Button";
-import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, History, TrendingUp, MoveHorizontal } from "lucide-react";
+import { ArrowLeft, FileText, ExternalLink, Hash, Layers, TrendingDown, Edit, History, TrendingUp, MoveHorizontal, Beef, Users } from "lucide-react";
 import { MovimientoModal } from "./MovimientoModal";
 import { ColectaModal } from "./ColectaModal";
 import { TransferenciaModal } from "./TransferenciaModal";
@@ -86,15 +86,17 @@ export const ColectaDetalle = () => {
 
     if (error) return (
         <div className="max-w-4xl mx-auto p-8 text-center space-y-4">
-            <div className="text-red-600 font-medium">{error}</div>
+            <div className="text-terracotta font-medium bg-terracotta-light p-6 rounded-xl border border-terracotta/20">{error}</div>
             <Button variant="secondary" onClick={fetchColecta}>Reintentar</Button>
         </div>
     );
 
-    if (!colecta) return <div className="p-8 text-center text-gray-500">No se encontró la colecta.</div>;
+    if (!colecta) return <div className="p-8 text-center text-ink-faint">No se encontró la colecta.</div>;
+
+    const stockActual = colecta.inventario?.stockActual ?? colecta.cantidad ?? 0;
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-0">
+        <div className="max-w-4xl mx-auto p-4 md:p-0 animate-fade-up">
             {/* Botón volver */}
             <div className="mb-4">
                 <Button variant="ghost" onClick={() => navigate("/")} className="-ml-2">
@@ -106,12 +108,15 @@ export const ColectaDetalle = () => {
 
             {/* Header: Título y botón editar */}
             <div className="mb-3 flex items-center justify-between gap-3">
-                <h1 className="text-xl sm:text-3xl font-bold text-gray-900 tracking-tight">Detalle de Colecta</h1>
+                <div>
+                    <p className="eyebrow mb-1">Cialco · Detalle de Colecta</p>
+                    <h1 className="font-serif text-2xl sm:text-3xl font-semibold text-ink tracking-tight">Detalle de Colecta</h1>
+                </div>
 
                 <Button
                     onClick={() => setEditModalOpen(true)}
                     variant="ghost"
-                    className="text-gray-500 hover:text-blue-600 flex-shrink-0 h-9 px-3"
+                    className="text-ink-faint hover:text-cialco flex-shrink-0 h-9 px-3"
                 >
                     <Edit className="h-4 w-4 sm:mr-2" />
                     <span className="hidden sm:inline">Editar</span>
@@ -125,14 +130,14 @@ export const ColectaDetalle = () => {
                     variant="secondary"
                     className="flex-1 h-11"
                 >
-                    <TrendingUp className="mr-2 h-4 w-4 text-green-600" />
+                    <TrendingUp className="mr-2 h-4 w-4 text-pine" />
                     Ingreso
                 </Button>
                 <Button
                     onClick={() => setModalOpen(true)}
                     variant="primary"
                     className="flex-1 h-11"
-                    disabled={!colecta || (colecta.inventario?.stockActual ?? colecta.cantidad ?? 0) <= 0}
+                    disabled={!colecta || stockActual <= 0}
                 >
                     <TrendingDown className="mr-2 h-4 w-4" />
                     Entrega
@@ -142,14 +147,14 @@ export const ColectaDetalle = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Datos Principales */}
                 <Card className="p-4 sm:p-6 md:col-span-2">
-                    <h2 className="text-lg sm:text-xl font-semibold mb-4 flex items-center gap-2">
-                        <FileText className="text-blue-600" size={24} />
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                        <FileText className="text-cialco" size={22} />
                         Información General
                     </h2>
                     <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
                         <div>
-                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Fecha</label>
-                            <p className="text-base sm:text-lg text-gray-900 font-medium">
+                            <label className="text-[10px] font-semibold text-ink-faint uppercase tracking-[0.12em]">Fecha</label>
+                            <p className="text-base sm:text-lg text-ink font-medium tabular">
                                 {colecta.fecha ? (() => {
                                     const dStr = String(colecta.fecha).split('T')[0];
                                     if (dStr.includes('-')) {
@@ -161,27 +166,25 @@ export const ColectaDetalle = () => {
                             </p>
                         </div>
                         <div>
-                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Cantidad</label>
-                            <p className="text-base sm:text-lg text-blue-600 font-bold">{colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}</p>
+                            <label className="text-[10px] font-semibold text-ink-faint uppercase tracking-[0.12em]">Cantidad</label>
+                            <p className="text-base sm:text-lg text-cialco font-semibold tabular">{colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}</p>
                         </div>
                         <div>
-                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Vigor / Motilidad</label>
-                            <p className="text-base sm:text-lg text-gray-900">{colecta.vigorMot || "-"}</p>
+                            <label className="text-[10px] font-semibold text-ink-faint uppercase tracking-[0.12em]">Vigor / Motilidad</label>
+                            <p className="text-base sm:text-lg text-ink">{colecta.vigorMot || "-"}</p>
                         </div>
                         <div>
-                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Stock Actual</label>
-                            <p className="text-base sm:text-lg text-green-600 font-bold">
-                                {colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
-                            </p>
+                            <label className="text-[10px] font-semibold text-ink-faint uppercase tracking-[0.12em]">Stock Actual</label>
+                            <p className="text-base sm:text-lg text-pine font-semibold tabular">{stockActual}</p>
                         </div>
                         <div className="col-span-2 lg:col-span-1">
-                            <label className="text-[10px] sm:text-xs font-semibold text-gray-500 uppercase">Color</label>
+                            <label className="text-[10px] font-semibold text-ink-faint uppercase tracking-[0.12em]">Color</label>
                             <div className="flex items-center gap-2 mt-0.5">
                                 <div
-                                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-gray-200 shadow-sm"
+                                    className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border border-ink/10 shadow-sm"
                                     style={{ backgroundColor: colecta.color || 'transparent' }}
                                 />
-                                <span className="text-xs sm:text-sm text-gray-600">{colorName}</span>
+                                <span className="text-xs sm:text-sm text-ink-soft">{colorName}</span>
                             </div>
                         </div>
                     </div>
@@ -189,89 +192,89 @@ export const ColectaDetalle = () => {
 
                 {/* Datos del Toro */}
                 <Card className="p-4 sm:p-6">
-                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="bg-orange-100 p-1.5 rounded-md text-sm sm:text-base">🐂</span>
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                        <span className="p-1.5 rounded-md bg-brass-50 text-brass-dark"><Beef size={18} /></span>
                         Datos del Toro
                     </h2>
                     <div className="space-y-3">
-                        <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
-                            <span className="text-sm text-gray-600">Nombre</span>
-                            <Link to={`/toros/${colecta.toro?.id}`} className="group flex items-center gap-1 hover:text-blue-600 transition-colors">
-                                <span className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-blue-600">{colecta.toro?.nombre}</span>
-                                <ExternalLink size={14} className="text-gray-300 group-hover:text-blue-500" />
+                        <div className="flex justify-between border-b border-hairline pb-2 items-center">
+                            <span className="text-sm text-ink-muted">Nombre</span>
+                            <Link to={`/toros/${colecta.toro?.id}`} className="group flex items-center gap-1 hover:text-cialco transition-colors">
+                                <span className="text-sm sm:text-base font-medium text-ink group-hover:text-cialco">{colecta.toro?.nombre}</span>
+                                <ExternalLink size={14} className="text-ink-faint group-hover:text-cialco" />
                             </Link>
                         </div>
-                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                            <span className="text-sm text-gray-600">Raza</span>
-                            <span className="text-sm sm:text-base font-medium text-gray-900">{colecta.toro?.raza}</span>
+                        <div className="flex justify-between border-b border-hairline pb-2">
+                            <span className="text-sm text-ink-muted">Raza</span>
+                            <span className="text-sm sm:text-base font-medium text-ink">{colecta.toro?.raza}</span>
                         </div>
                     </div>
                 </Card>
 
                 {/* Datos del Cliente */}
                 <Card className="p-4 sm:p-6">
-                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                        <span className="bg-green-100 p-1.5 rounded-md text-sm sm:text-base">👤</span>
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                        <span className="p-1.5 rounded-md bg-moss-light text-pine"><Users size={18} /></span>
                         Datos del Cliente
                     </h2>
                     <div className="space-y-3">
-                        <div className="flex justify-between border-b border-gray-100 pb-2 items-center">
-                            <span className="text-sm text-gray-600">Razón Social</span>
-                            <Link to={`/clientes/${colecta.cliente?.id}`} className="group flex items-center gap-1 hover:text-green-600 transition-colors">
-                                <span className="text-sm sm:text-base font-medium text-gray-900 group-hover:text-green-600">{colecta.cliente?.razonSocial}</span>
-                                <ExternalLink size={14} className="text-gray-300 group-hover:text-green-500" />
+                        <div className="flex justify-between border-b border-hairline pb-2 items-center">
+                            <span className="text-sm text-ink-muted">Razón Social</span>
+                            <Link to={`/clientes/${colecta.cliente?.id}`} className="group flex items-center gap-1 hover:text-pine transition-colors">
+                                <span className="text-sm sm:text-base font-medium text-ink group-hover:text-pine">{colecta.cliente?.razonSocial}</span>
+                                <ExternalLink size={14} className="text-ink-faint group-hover:text-pine" />
                             </Link>
                         </div>
-                        <div className="flex justify-between border-b border-gray-100 pb-2">
-                            <span className="text-sm text-gray-600">CUIT</span>
-                            <span className="text-sm sm:text-base font-mono text-gray-900">{colecta.cliente?.cuit || colecta.cuit || "-"}</span>
+                        <div className="flex justify-between border-b border-hairline pb-2">
+                            <span className="text-sm text-ink-muted">CUIT</span>
+                            <span className="text-sm sm:text-base font-mono text-ink">{colecta.cliente?.cuit || colecta.cuit || "-"}</span>
                         </div>
                     </div>
                 </Card>
 
                 {/* Ubicación (Contenedores) */}
                 <Card className="p-4 sm:p-6">
-                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Layers className="text-purple-600" size={20} />
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                        <Layers className="text-cialco" size={20} />
                         Contenedores ({colecta.contenedores?.length || 0})
                     </h2>
                     {colecta.contenedores && colecta.contenedores.length > 0 ? (
                         <div className="space-y-4">
                             {colecta.contenedores.map((contenedor, index) => (
-                                <div key={contenedor.id || index} className="bg-gray-50/50 p-3 sm:p-4 rounded-xl border border-gray-200">
+                                <div key={contenedor.id || index} className="bg-ivory-100/60 p-3 sm:p-4 rounded-xl border border-hairline">
                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
                                         <div>
-                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Termo</label>
-                                            <span className="font-mono font-semibold text-gray-800">
+                                            <label className="text-[10px] text-ink-faint uppercase tracking-[0.12em] block mb-0.5">Termo</label>
+                                            <span className="font-mono font-semibold text-ink">
                                                 {contenedor.termo?.codigo || "-"}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Canastillo</label>
-                                            <span className="font-mono font-semibold text-gray-800">
+                                            <label className="text-[10px] text-ink-faint uppercase tracking-[0.12em] block mb-0.5">Canastillo</label>
+                                            <span className="font-mono font-semibold text-ink">
                                                 {contenedor.canastillo?.codigo || "-"}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Stock Actual</label>
-                                            <span className={`font-bold ${(contenedor.stockActual ?? 0) > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                            <label className="text-[10px] text-ink-faint uppercase tracking-[0.12em] block mb-0.5">Stock Actual</label>
+                                            <span className={`font-bold tabular ${(contenedor.stockActual ?? 0) > 0 ? 'text-pine' : 'text-terracotta'}`}>
                                                 {contenedor.stockActual ?? 0}
                                             </span>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] text-gray-500 uppercase block mb-0.5">Inicial</label>
-                                            <span className="font-semibold text-gray-600">
+                                            <label className="text-[10px] text-ink-faint uppercase tracking-[0.12em] block mb-0.5">Inicial</label>
+                                            <span className="font-semibold text-ink-muted tabular">
                                                 {contenedor.cantidad || 0}
                                             </span>
                                         </div>
                                     </div>
 
                                     {(contenedor.stockActual ?? 0) > 0 && (
-                                        <div className="mt-3 flex justify-end border-t border-gray-100 pt-2">
+                                        <div className="mt-3 flex justify-end border-t border-hairline pt-2">
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
-                                                className="text-blue-600 hover:bg-blue-50 py-1 h-8"
+                                                className="text-cialco hover:bg-cialco-50 py-1 h-8"
                                                 onClick={() => setTransferModal({
                                                     isOpen: true,
                                                     origen: {
@@ -291,7 +294,7 @@ export const ColectaDetalle = () => {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-4 text-gray-500 text-sm italic">
+                        <div className="text-center py-4 text-ink-faint text-sm italic">
                             No hay contenedores registrados
                         </div>
                     )}
@@ -299,33 +302,33 @@ export const ColectaDetalle = () => {
 
                 {/* Movimientos Resumen */}
                 <Card className="p-4 sm:p-6">
-                    <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Hash className="text-gray-600" size={20} />
+                    <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                        <Hash className="text-brass" size={20} />
                         Resumen de Pajuelas
                     </h2>
                     <div className="space-y-4">
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
-                            <span className="text-sm text-gray-600">Ingreso Inicial</span>
-                            <span className="text-sm font-medium text-gray-900 bg-gray-100 px-2 py-0.5 rounded">
+                        <div className="flex justify-between items-center pb-2 border-b border-hairline">
+                            <span className="text-sm text-ink-muted">Ingreso Inicial</span>
+                            <span className="text-sm font-medium text-ink bg-ivory-200/70 px-2 py-0.5 rounded tabular">
                                 {colecta.inventario?.cantidadInicial ?? colecta.cantidad ?? 0}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
-                            <span className="text-sm text-gray-600">Ingresos Adicionales</span>
-                            <span className="text-sm font-medium text-gray-900 bg-green-50 text-green-700 px-2 py-0.5 rounded">
+                        <div className="flex justify-between items-center pb-2 border-b border-hairline">
+                            <span className="text-sm text-ink-muted">Ingresos Adicionales</span>
+                            <span className="chip chip-green tabular">
                                 {colecta.inventario?.ingresosTotal ?? 0}
                             </span>
                         </div>
-                        <div className="flex justify-between items-center pb-2 border-b border-gray-50">
-                            <span className="text-sm text-gray-600">Salidas</span>
-                            <span className="text-sm font-medium text-gray-900 bg-red-50 text-red-700 px-2 py-0.5 rounded">
+                        <div className="flex justify-between items-center pb-2 border-b border-hairline">
+                            <span className="text-sm text-ink-muted">Salidas</span>
+                            <span className="chip chip-red tabular">
                                 {colecta.inventario?.salidasTotal ?? 0}
                             </span>
                         </div>
                         <div className="flex justify-between items-center pt-2">
-                            <span className="text-gray-800 font-semibold text-sm">Stock Actual</span>
-                            <span className="font-bold text-blue-600 text-xl">
-                                {colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
+                            <span className="text-ink font-semibold text-sm">Stock Actual</span>
+                            <span className="font-serif font-semibold text-cialco text-2xl tabular">
+                                {stockActual}
                             </span>
                         </div>
                     </div>
@@ -334,18 +337,18 @@ export const ColectaDetalle = () => {
 
             {/* Historial de Movimientos */}
             <Card className="p-4 sm:p-6 mt-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <History className="text-gray-600" size={20} />
+                <h2 className="text-base font-semibold mb-4 flex items-center gap-2 text-ink">
+                    <History className="text-ink-muted" size={20} />
                     Historial de Movimientos
                 </h2>
 
                 {loadingMovimientos ? (
-                    <div className="text-center py-8 text-gray-500 flex flex-col items-center gap-2">
-                        <div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                    <div className="text-center py-8 text-ink-faint flex flex-col items-center gap-2">
+                        <div className="w-8 h-8 border-2 border-pine border-t-transparent rounded-full animate-spin"></div>
                         <span className="text-sm">Cargando movimientos...</span>
                     </div>
                 ) : movimientos.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 border-2 border-dashed border-gray-100 rounded-2xl">
+                    <div className="text-center py-10 text-ink-faint border-2 border-dashed border-hairline rounded-2xl">
                         No hay movimientos registrados para esta colecta
                     </div>
                 ) : (
@@ -354,18 +357,18 @@ export const ColectaDetalle = () => {
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
                                 <thead>
-                                    <tr className="border-b border-gray-200 bg-gray-50/50">
-                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Fecha</th>
-                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Tipo</th>
-                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Remito</th>
-                                        <th className="text-right py-3 px-4 text-sm font-semibold text-gray-700">Cantidad</th>
-                                        <th className="text-left py-3 px-4 text-sm font-semibold text-gray-700">Notas</th>
+                                    <tr className="border-b border-hairline">
+                                        <th className="text-left py-3 px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Fecha</th>
+                                        <th className="text-left py-3 px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Tipo</th>
+                                        <th className="text-left py-3 px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Remito</th>
+                                        <th className="text-right py-3 px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Cantidad</th>
+                                        <th className="text-left py-3 px-4 text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint">Notas</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {movimientos.map((mov) => (
-                                        <tr key={mov.id} className="border-b border-gray-100 hover:bg-gray-50/80 transition-colors">
-                                            <td className="py-3 px-4 text-sm text-gray-600">
+                                        <tr key={mov.id} className="border-b border-hairline/60 hover:bg-ivory-100/60 transition-colors">
+                                            <td className="py-3 px-4 text-sm text-ink-muted tabular">
                                                 {(() => {
                                                     if (!mov.fecha) return "-";
                                                     return new Date(mov.fecha).toLocaleString('es-AR', {
@@ -379,21 +382,18 @@ export const ColectaDetalle = () => {
                                                 })()}
                                             </td>
                                             <td className="py-3 px-4">
-                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${mov.tipo === 'ingreso'
-                                                    ? 'bg-green-100 text-green-800'
-                                                    : 'bg-red-100 text-red-800'
-                                                    }`}>
+                                                <span className={`chip ${mov.tipo === 'ingreso' ? 'chip-green' : 'chip-red'}`}>
                                                     {mov.tipo === 'ingreso' ? '↑ Ingreso' : '↓ Salida'}
                                                 </span>
                                             </td>
-                                            <td className="py-3 px-4 text-sm font-mono text-gray-700">
+                                            <td className="py-3 px-4 text-sm font-mono text-ink">
                                                 {mov.remito || '-'}
                                             </td>
-                                            <td className={`py-3 px-4 text-sm font-semibold text-right ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'
+                                            <td className={`py-3 px-4 text-sm font-semibold text-right tabular ${mov.tipo === 'ingreso' ? 'text-pine' : 'text-terracotta'
                                                 }`}>
                                                 {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
                                             </td>
-                                            <td className="py-3 px-4 text-sm text-gray-500 max-w-xs truncate" title={mov.notas || ''}>
+                                            <td className="py-3 px-4 text-sm text-ink-faint max-w-xs truncate" title={mov.notas || ''}>
                                                 {mov.notas || '-'}
                                             </td>
                                         </tr>
@@ -405,34 +405,34 @@ export const ColectaDetalle = () => {
                         {/* Vista de Cards para Mobile */}
                         <div className="md:hidden space-y-3">
                             {movimientos.map((mov) => (
-                                <div key={mov.id} className="p-3 bg-white border border-gray-100 rounded-xl shadow-sm space-y-2">
+                                <div key={mov.id} className="p-3 bg-paper border border-hairline rounded-xl shadow-soft space-y-2">
                                     <div className="flex justify-between items-start">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] text-gray-500 uppercase font-bold">Fecha</span>
-                                            <span className="text-xs font-semibold text-gray-800">
+                                            <span className="text-[10px] text-ink-faint uppercase tracking-widest font-semibold">Fecha</span>
+                                            <span className="text-xs font-semibold text-ink tabular">
                                                 {mov.fecha ? new Date(mov.fecha).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '-'}
                                             </span>
                                         </div>
-                                        <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${mov.tipo === 'ingreso' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                                        <span className={`chip ${mov.tipo === 'ingreso' ? 'chip-green' : 'chip-red'}`}>
                                             {mov.tipo === 'ingreso' ? 'INGRESO' : 'SALIDA'}
                                         </span>
                                     </div>
-                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-gray-50">
+                                    <div className="grid grid-cols-2 gap-2 pt-2 border-t border-hairline/70">
                                         <div>
-                                            <span className="text-[10px] text-gray-500 uppercase block">Remito</span>
-                                            <span className="text-xs font-mono text-gray-700">{mov.remito || '-'}</span>
+                                            <span className="text-[10px] text-ink-faint uppercase tracking-widest block">Remito</span>
+                                            <span className="text-xs font-mono text-ink">{mov.remito || '-'}</span>
                                         </div>
                                         <div className="text-right">
-                                            <span className="text-[10px] text-gray-500 uppercase block">Cantidad</span>
-                                            <span className={`text-base font-bold ${mov.tipo === 'ingreso' ? 'text-green-600' : 'text-red-600'}`}>
+                                            <span className="text-[10px] text-ink-faint uppercase tracking-widest block">Cantidad</span>
+                                            <span className={`text-base font-bold tabular ${mov.tipo === 'ingreso' ? 'text-pine' : 'text-terracotta'}`}>
                                                 {mov.tipo === 'ingreso' ? '+' : '-'}{mov.cantidad}
                                             </span>
                                         </div>
                                     </div>
                                     {mov.notas && (
-                                        <div className="pt-2 border-t border-gray-50">
-                                            <span className="text-[10px] text-gray-500 uppercase block">Notas</span>
-                                            <p className="text-xs text-gray-600 leading-relaxed italic">"{mov.notas}"</p>
+                                        <div className="pt-2 border-t border-hairline/70">
+                                            <span className="text-[10px] text-ink-faint uppercase tracking-widest block">Notas</span>
+                                            <p className="text-xs text-ink-soft leading-relaxed italic">"{mov.notas}"</p>
                                         </div>
                                     )}
                                 </div>
@@ -448,7 +448,7 @@ export const ColectaDetalle = () => {
                     isOpen={modalOpen}
                     onClose={() => setModalOpen(false)}
                     colectaId={colecta.id}
-                    stockDisponible={colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
+                    stockDisponible={stockActual}
                     tipo="salida"
                     onSuccess={() => {
                         fetchColecta();
@@ -462,7 +462,7 @@ export const ColectaDetalle = () => {
                     isOpen={ingresoModalOpen}
                     onClose={() => setIngresoModalOpen(false)}
                     colectaId={colecta.id}
-                    stockDisponible={colecta.inventario?.stockActual ?? colecta.cantidad ?? 0}
+                    stockDisponible={stockActual}
                     tipo="ingreso"
                     onSuccess={() => {
                         fetchColecta();

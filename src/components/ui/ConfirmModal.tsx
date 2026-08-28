@@ -30,9 +30,9 @@ export const ConfirmModal = ({
 
     const getIcon = () => {
         switch (icon) {
-            case 'trash': return <div className="h-12 w-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mb-4"><Trash2 size={24} /></div>;
-            case 'alert': return <div className="h-12 w-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-4"><AlertTriangle size={24} /></div>;
-            case 'info': return <div className="h-12 w-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4"><Info size={24} /></div>;
+            case 'trash': return <div className="h-12 w-12 bg-terracotta-light text-terracotta rounded-full flex items-center justify-center mb-4"><Trash2 size={24} /></div>;
+            case 'alert': return <div className="h-12 w-12 bg-harvest-light text-harvest rounded-full flex items-center justify-center mb-4"><AlertTriangle size={24} /></div>;
+            case 'info': return <div className="h-12 w-12 bg-cialco-50 text-cialco rounded-full flex items-center justify-center mb-4"><Info size={24} /></div>;
             default: return null;
         }
     };
@@ -40,24 +40,24 @@ export const ConfirmModal = ({
     const isOnlyNotice = !onConfirm;
 
     return (
-        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 bg-ink/50 backdrop-blur-[2px] flex items-center justify-center z-[100] p-4 animate-fade-in">
             <div
-                className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden transform transition-all animate-in zoom-in-95 duration-200 border border-gray-100"
+                className="bg-paper rounded-3xl shadow-lift w-full max-w-sm overflow-hidden border border-hairline animate-scale-in"
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="relative p-8 flex flex-col items-center text-center">
                     {/* Botón cerrar esquina */}
                     <button
                         onClick={onClose}
-                        className="absolute right-4 top-4 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-full hover:bg-gray-100"
+                        className="absolute right-4 top-4 text-ink-faint hover:text-ink transition-colors p-1 rounded-full hover:bg-ivory-100"
                     >
                         <X size={18} />
                     </button>
 
                     {getIcon()}
 
-                    <h3 className="text-xl font-black text-gray-900 mb-2 tracking-tight">{title}</h3>
-                    <p className="text-gray-500 text-sm leading-relaxed mb-8">
+                    <h3 className="font-serif text-2xl font-semibold text-ink mb-2 tracking-tight">{title}</h3>
+                    <p className="text-ink-muted text-sm leading-relaxed mb-8">
                         {message}
                     </p>
 
@@ -67,7 +67,7 @@ export const ConfirmModal = ({
                                 type="button"
                                 variant="secondary"
                                 onClick={onClose}
-                                className="flex-1 h-11 font-bold text-xs uppercase"
+                                className="flex-1 h-11 font-bold text-xs uppercase tracking-wider"
                                 disabled={isLoading}
                             >
                                 {cancelText}
@@ -77,7 +77,7 @@ export const ConfirmModal = ({
                             type="button"
                             variant={variant === 'info' ? 'primary' : variant}
                             onClick={onConfirm || onClose}
-                            className="flex-1 h-11 font-bold text-xs uppercase shadow-sm"
+                            className="flex-1 h-11 font-bold text-xs uppercase tracking-wider shadow-sm"
                             isLoading={isLoading}
                         >
                             {isOnlyNotice ? "ENTENDIDO" : confirmText}

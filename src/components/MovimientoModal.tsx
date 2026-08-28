@@ -172,16 +172,16 @@ export const MovimientoModal = ({
     const total = calcularTotal();
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+            <div className="bg-paper rounded-2xl shadow-lift border border-hairline max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-scale-in">
                 {/* Header */}
-                <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
-                    <h2 className="text-xl font-bold text-gray-900">
+                <div className="flex items-center justify-between p-6 border-b border-hairline sticky top-0 bg-paper z-10">
+                    <h2 className="font-serif text-xl font-semibold text-ink">
                         {tipo === 'ingreso' ? 'Registrar Ingreso' : 'Registrar Salida'}
                     </h2>
                     <button
                         onClick={onClose}
-                        className="text-gray-400 hover:text-gray-600 transition"
+                        className="text-ink-faint hover:text-ink transition"
                     >
                         <X size={24} />
                     </button>
@@ -191,17 +191,17 @@ export const MovimientoModal = ({
                 <form onSubmit={handleSubmit} className="p-6 space-y-6">
                     {/* Distribución por contenedores */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <label className="field-label">
                             <TermoIcon className="inline mr-2" size={16} />
                             Distribución por contenedores
                         </label>
 
                         {loadingContenedores ? (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-ink-faint">
                                 Cargando contenedores...
                             </div>
                         ) : contenedores.length === 0 ? (
-                            <div className="text-center py-8 text-gray-500">
+                            <div className="text-center py-8 text-ink-faint">
                                 No hay contenedores disponibles
                             </div>
                         ) : (
@@ -209,16 +209,16 @@ export const MovimientoModal = ({
                                 {contenedores.map((contenedor) => (
                                     <div
                                         key={contenedor.id}
-                                        className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-gray-200"
+                                        className="flex items-center gap-3 p-4 bg-ivory-100/60 rounded-lg border border-hairline"
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
-                                                <span className="font-mono text-sm font-semibold text-gray-700">
+                                                <span className="font-mono text-sm font-semibold text-ink">
                                                     {contenedor.termo?.codigo} - C{contenedor.canastillo?.codigo}
                                                 </span>
                                             </div>
-                                            <div className="text-xs text-gray-500 mt-1">
-                                                Stock: <span className={`font-semibold ${contenedor.stockActual > 0 ? 'text-green-600' : 'text-red-500'}`}>
+                                            <div className="text-xs text-ink-muted mt-1">
+                                                Stock: <span className={`font-semibold ${contenedor.stockActual > 0 ? 'text-pine' : 'text-terracotta'}`}>
                                                     {contenedor.stockActual}
                                                 </span> / {contenedor.cantidad} pajuelas
                                             </div>
@@ -231,7 +231,7 @@ export const MovimientoModal = ({
                                                 max={tipo === 'salida' ? contenedor.stockActual : undefined}
                                                 value={distribucion[contenedor.id] || "0"}
                                                 onChange={(e) => handleDistribucionChange(contenedor.id, e.target.value)}
-                                                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                                                className="field px-2.5 py-1.5 text-center"
                                                 placeholder="0"
                                             />
                                         </div>
@@ -241,17 +241,17 @@ export const MovimientoModal = ({
                         )}
 
                         {/* Total */}
-                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="mt-4 p-4 bg-cialco-50 rounded-lg border border-cialco/20">
                             <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium text-blue-900">
+                                <span className="text-sm font-medium text-ink-soft">
                                     Total {tipo === 'ingreso' ? 'a ingresar' : 'a entregar'}:
                                 </span>
-                                <span className="text-2xl font-bold text-blue-700">
+                                <span className="text-2xl font-semibold text-cialco">
                                     {total}
                                 </span>
                             </div>
                             {tipo === 'salida' && (
-                                <p className="text-xs text-blue-600 mt-1">
+                                <p className="text-xs text-cialco mt-1">
                                     Stock disponible total: {stockDisponible}
                                 </p>
                             )}
@@ -259,7 +259,7 @@ export const MovimientoModal = ({
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="field-label">
                             {tipo === 'ingreso' ? 'Fecha de ingreso' : 'Fecha de entrega'}
                         </label>
                         <input
@@ -267,45 +267,45 @@ export const MovimientoModal = ({
                             value={fecha}
                             onChange={(e) => setFecha(e.target.value)}
                             required
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            className="field"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="field-label">
                             N° de Remito
                         </label>
                         <input
                             type="text"
                             value={remito}
                             onChange={(e) => setRemito(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+                            className="field"
                             placeholder="Ej: 0001-00001234"
                             maxLength={50}
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="field-label">
                             Motivo / Observaciones
                         </label>
                         <textarea
                             value={observaciones}
                             onChange={(e) => setObservaciones(e.target.value)}
                             rows={2}
-                            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all resize-none"
+                            className="field resize-none"
                             placeholder="Notas adicionales..."
                         />
                     </div>
 
                     {error && (
-                        <div className="bg-red-50 text-red-700 p-3 rounded-md text-sm">
+                        <div className="bg-terracotta-light text-terracotta p-3 rounded-md text-sm">
                             {error}
                         </div>
                     )}
 
                     {/* Footer */}
-                    <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <div className="flex justify-end gap-3 pt-4 border-t border-hairline">
                         <Button type="button" variant="secondary" onClick={onClose}>
                             Cancelar
                         </Button>

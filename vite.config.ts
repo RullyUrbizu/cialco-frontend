@@ -16,8 +16,8 @@ export default defineConfig({
         name: 'Stock Cialco',
         short_name: 'Cialco',
         description: 'Sistema de Gestión de Stock Cialco',
-        theme_color: '#3b82f6',
-        background_color: '#ffffff',
+        theme_color: '#F6F1E8',
+        background_color: '#F6F1E8',
         display: 'standalone',
         icons: [
           {

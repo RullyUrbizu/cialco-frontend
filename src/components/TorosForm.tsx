@@ -65,24 +65,27 @@ export const ToroForm = () => {
     }
   };
 
-  if (initialLoading) return <div className="p-8 text-center text-gray-500">Cargando datos del toro...</div>;
+  if (initialLoading) return <div className="p-8 text-center text-ink-faint">Cargando datos del toro...</div>;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto animate-fade-up">
       <div className="mb-6 flex items-center gap-4">
         <Button variant="ghost" onClick={() => navigate("/Toros")}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Volver
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-          {isEditing ? "Editar Toro" : "Agregar Toro"}
-        </h1>
+        <div>
+          <p className="eyebrow mb-1">Cialco · Reproducción</p>
+          <h1 className="font-serif text-3xl font-semibold text-ink tracking-tight">
+            {isEditing ? "Editar Toro" : "Agregar Toro"}
+          </h1>
+        </div>
       </div>
 
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="flex flex-col gap-6">
           <div>
-            <label htmlFor="nombre" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="nombre" className="field-label">
               Nombre
             </label>
             <input
@@ -91,20 +94,20 @@ export const ToroForm = () => {
               value={nombre}
               onChange={(e) => setNombre(e.target.value)}
               required
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="field"
               placeholder="Ej: Toro Campeón"
             />
           </div>
 
           <div>
-            <label htmlFor="raza" className="block text-sm font-medium text-gray-700 mb-1">
+            <label htmlFor="raza" className="field-label">
               Raza
             </label>
             <select
               id="raza"
               value={raza}
               onChange={(e) => setRaza(e.target.value as RazaEnum)}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
+              className="field"
             >
               {Object.values(RazaEnum).map((r) => (
                 <option key={r} value={r}>

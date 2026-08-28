@@ -214,25 +214,41 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
     control: (base: any) => ({
       ...base,
       borderRadius: '0.5rem',
-      borderColor: '#d1d5db',
+      borderColor: '#D8CCB8',
+      boxShadow: 'none',
       padding: '2px',
-      '&:hover': { borderColor: '#3b82f6' }
-    })
+      fontSize: '0.875rem',
+      '&:hover': { borderColor: '#A4863F' }
+    }),
+    option: (base: any, state: any) => ({
+      ...base,
+      fontSize: '0.875rem',
+      backgroundColor: state.isSelected ? '#1F4A36' : state.isFocused ? '#F6F1E8' : 'transparent',
+      color: state.isSelected ? '#FFFDF8' : '#1D2923',
+    }),
+    menu: (base: any) => ({
+      ...base,
+      border: '1px solid #E9E1D2',
+      borderRadius: '0.5rem',
+      overflow: 'hidden',
+      boxShadow: '0 16px 40px -12px rgba(29,41,35,0.18)',
+    }),
+    indicatorSeparator: () => ({ display: 'none' }),
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden transform transition-all">
-        <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-          <h2 className="text-xl font-bold text-gray-800">{colectaToEdit ? 'Editar Colecta' : 'Registrar Colecta'}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors">
+    <div className="fixed inset-0 bg-ink/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-paper rounded-2xl shadow-lift w-full max-w-3xl overflow-hidden border border-hairline transform transition-all animate-scale-in">
+        <div className="p-6 border-b border-hairline flex justify-between items-center bg-ivory-100">
+          <h2 className="font-serif text-xl font-semibold text-ink">{colectaToEdit ? 'Editar Colecta' : 'Registrar Colecta'}</h2>
+          <button onClick={onClose} className="text-ink-faint hover:text-ink transition-colors">
             <span className="text-2xl">&times;</span>
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto max-h-[80vh]">
           {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-600 rounded-lg text-sm">
+            <div className="mb-4 p-3 bg-terracotta-light border border-terracotta/20 text-terracotta rounded-lg text-sm">
               {error}
             </div>
           )}
@@ -240,9 +256,9 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
           <div className="grid grid-cols-1 gap-4 mb-6">
             {/* Toro con Buscador */}
             <div>
-              <div className="flex justify-between items-end mb-1">
-                <label className="block text-sm font-medium text-gray-700">Toro</label>
-                <span className="text-[10px] text-blue-600 font-medium">Si es nuevo, agrégalo en la sección Toros</span>
+              <div className="flex justify-between items-end mb-1.5">
+                <label className="field-label !mb-0">Toro</label>
+                <span className="text-[10px] text-cialco font-medium">Si es nuevo, agrégalo en la sección Toros</span>
               </div>
               <Select
                 options={toroOptions}
@@ -258,9 +274,9 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
             {/* Cliente con Buscador */}
             <div>
-              <div className="flex justify-between items-end mb-1">
-                <label className="block text-sm font-medium text-gray-700">Cliente</label>
-                <span className="text-[10px] text-blue-600 font-medium">Si es nuevo, agrégalo en la sección Clientes</span>
+              <div className="flex justify-between items-end mb-1.5">
+                <label className="field-label !mb-0">Cliente</label>
+                <span className="text-[10px] text-cialco font-medium">Si es nuevo, agrégalo en la sección Clientes</span>
               </div>
               <Select
                 options={clienteOptions}
@@ -276,12 +292,12 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
             {/* Fecha */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
+              <label className="field-label">Fecha</label>
               <input
                 type="date"
                 value={form.fecha}
                 onChange={(e) => setForm({ ...form, fecha: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                className="field"
                 required
               />
             </div>
@@ -289,7 +305,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
             {/* Vigor y Motilidad */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Vigor (0-5)</label>
+                <label className="field-label">Vigor (0-5)</label>
                 <input
                   type="number"
                   step="0.5"
@@ -297,21 +313,21 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
                   max="5"
                   value={form.vigor}
                   onChange={(e) => setForm({ ...form, vigor: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="field"
                   placeholder="Ej: 3.5"
                   required
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Motilidad (%)</label>
+                <label className="field-label">Motilidad (%)</label>
                 <input
                   type="number"
                   min="0"
                   max="100"
                   value={form.motilidad}
                   onChange={(e) => setForm({ ...form, motilidad: e.target.value })}
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="field"
                   placeholder="Ej: 75"
                   required
                 />
@@ -320,8 +336,8 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
             {/* Selector de Color */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Color de Identificación</label>
-              <div className="flex flex-wrap gap-3 p-3 bg-gray-50 rounded-xl border border-gray-200">
+              <label className="field-label">Color de Identificación</label>
+              <div className="flex flex-wrap gap-3 p-3 bg-ivory-100 rounded-xl border border-hairline">
                 {[
                   { name: 'Sin Color', value: '' },
                   { name: 'Blanco', value: '#ffffff' },
@@ -337,15 +353,15 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
                       }`}
                   >
                     <div
-                      className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all ${form.color === color.value ? 'border-blue-600 ring-2 ring-blue-100' : 'border-white'
+                      className={`w-8 h-8 rounded-full border-2 shadow-sm transition-all ${form.color === color.value ? 'border-brass ring-2 ring-brass/25' : 'border-white'
                         }`}
                       style={{ backgroundColor: color.value || '#ffffff' }}
                     >
                       {!color.value && (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">/</div>
+                        <div className="w-full h-full flex items-center justify-center text-ink-faint text-xs">/</div>
                       )}
                     </div>
-                    <span className={`text-[10px] font-bold ${form.color === color.value ? 'text-blue-600' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] font-semibold ${form.color === color.value ? 'text-brass-dark' : 'text-ink-faint'}`}>
                       {color.name}
                     </span>
                   </button>
@@ -355,13 +371,13 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
           </div>
 
           {/* Sección de Contenedores */}
-          <div className="border-t border-gray-200 pt-6">
+          <div className="border-t border-hairline pt-6">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-gray-800">Contenedores</h3>
+              <h3 className="font-serif text-lg font-semibold text-ink">Contenedores</h3>
               <button
                 type="button"
                 onClick={handleAgregarContenedor}
-                className="px-3 py-1.5 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600 transition-colors"
+                className="px-3 py-1.5 bg-pine text-white text-sm rounded-lg hover:bg-pine-600 transition-colors"
               >
                 + Agregar Contenedor
               </button>
@@ -369,15 +385,15 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
             <div className="space-y-3">
               {contenedores.map((contenedor, index) => (
-                <div key={index} className="flex gap-3 items-start p-4 bg-gray-50 rounded-lg border border-gray-200">
+                <div key={index} className="flex gap-3 items-start p-4 bg-ivory-100/60 rounded-lg border border-hairline">
                   <div className="flex-1 grid grid-cols-3 gap-3">
                     {/* Termo */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Termo</label>
+                      <label className="block text-[11px] font-semibold text-ink-soft mb-1">Termo</label>
                       <select
                         value={contenedor.termoId}
                         onChange={(e) => handleContenedorChange(index, 'termoId', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="field !py-1.5 !px-2.5 text-xs"
                         required
                       >
                         <option value="">Seleccione...</option>
@@ -389,15 +405,15 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
                     {/* Canastillo */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">
+                      <label className="block text-[11px] font-semibold text-ink-soft mb-1">
                         Canastillo (#)
-                        <span className="text-[10px] text-blue-500 ml-1">(usa comas para múltiples)</span>
+                        <span className="text-[10px] text-cialco font-medium ml-1">(usa comas para múltiples)</span>
                       </label>
                       <input
                         type="text"
                         value={contenedor.canastilloCodigo}
                         onChange={(e) => handleContenedorChange(index, 'canastilloCodigo', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="field !py-1.5 !px-2.5 text-xs"
                         placeholder="Ej: 1 o 5,2,8"
                         required
                       />
@@ -405,13 +421,13 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
 
                     {/* Cantidad */}
                     <div>
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Pajuelas</label>
+                      <label className="block text-[11px] font-semibold text-ink-soft mb-1">Pajuelas</label>
                       <input
                         type="number"
                         min="1"
                         value={contenedor.cantidad}
                         onChange={(e) => handleContenedorChange(index, 'cantidad', e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                        className="field !py-1.5 !px-2.5 text-xs"
                         placeholder="Ej: 50"
                         required
                       />
@@ -423,7 +439,7 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
                     <button
                       type="button"
                       onClick={() => handleEliminarContenedor(index)}
-                      className="mt-6 p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className="mt-6 p-2 text-terracotta hover:bg-terracotta-light rounded-lg transition-colors"
                       title="Eliminar contenedor"
                     >
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -436,10 +452,10 @@ export const ColectaModal = ({ isOpen, onClose, onCreated, colectaToEdit, onUpda
             </div>
 
             {/* Total de Pajuelas */}
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+            <div className="mt-4 p-3 bg-cialco-50 border border-cialco/20 rounded-lg">
               <div className="flex justify-between items-center">
-                <span className="text-sm font-medium text-gray-700">Total de Pajuelas:</span>
-                <span className="text-lg font-bold text-blue-600">{calcularTotalPajuelas()}</span>
+                <span className="text-sm font-medium text-ink-soft">Total de Pajuelas:</span>
+                <span className="text-lg font-semibold text-cialco">{calcularTotalPajuelas()}</span>
               </div>
             </div>
           </div>
